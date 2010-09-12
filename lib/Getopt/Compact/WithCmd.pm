@@ -5,6 +5,7 @@ use warnings;
 use 5.008_001;
 use base 'Getopt::Compact';
 use Getopt::Long qw/GetOptionsFromArray/;
+use Carp;
 use constant DEFAULT_CONFIG => (no_auto_abbrev => 1, bundling => 1);
 
 our $VERSION = '0.01';
@@ -80,6 +81,18 @@ sub new {
 
 sub command    { $_[0]->{command} }
 sub is_success { $_[0]->status    }
+sub pod2usage  { carp 'Not implemented' }
+
+sub opts {
+    my($self) = @_;
+    my $opt = $self->{opt};
+    if ($self->{usage} && ($opt->{help} || $self->status == 0)) {
+        # display usage message & exit
+        print $self->usage;
+        exit !$self->status;
+    }
+    return $opt;
+}
 
 sub usage {
     my($self) = @_;
@@ -180,10 +193,10 @@ sub _init_struct {
     unshift @{$self->{struct}}, [[qw(h help)], qq(this help message)]
         if $self->{usage} && !$self->_has_option('help');
 
-    unless($self->_has_option('man')) {
-        push @{$self->{struct}}, ['man', qq(Display documentation)];
-        $self->{_allow_man} = 1;
-    }
+#    unless($self->_has_option('man')) {
+#        push @{$self->{struct}}, ['man', qq(Display documentation)];
+#        $self->{_allow_man} = 1;
+#    }
 }
 
 sub _check_requires {
