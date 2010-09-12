@@ -12,18 +12,18 @@ our $VERSION = '0.01';
 sub new {
     my ($class, %args) = @_;
     my $self = bless {
-        cmd      => $args{cmd} || do { require File::Basename; File::Basename::basename($0) },
-        name     => $args{name},
-        version  => $args{version} || $::VERSION,
-        modes    => $args{modes},
-        opts     => {},
-        usage    => exists $args{usage} && !$args{usage} ? 0 : 1,
-        args     => $args{args} || '',
-        struct   => [],
-        summary  => {},
-        requires => {},
-        error    => undef,
-        ex_usage => '',
+        cmd        => $args{cmd} || do { require File::Basename; File::Basename::basename($0) },
+        name       => $args{name},
+        version    => $args{version} || $::VERSION,
+        modes      => $args{modes},
+        opts       => {},
+        usage      => exists $args{usage} && !$args{usage} ? 0 : 1,
+        args       => $args{args} || '',
+        struct     => [],
+        summary    => {},
+        requires   => {},
+        error      => undef,
+        post_usage => undef,
     }, $class;
 
     my %config = (DEFAULT_CONFIG, %{$args{configure} || {}});
@@ -68,7 +68,9 @@ sub new {
 
     $self->{command} = $command;
     $self->_init_struct($command_struct->{$command}->{options});
-    $self->{args} = $command_struct->{$command}{args} if exists $command_struct->{$command}{args};
+    for my $key (qw/args post_usage/) {
+        $self->{$key} = $command_struct->{$command}{$key} if exists $command_struct->{$command}{$key};
+    }
     my $opthash = $self->_parse_struct;
     $self->{ret} = GetOptionsFromArray(\@ARGV, %$opthash);
     $self->_check_requires;
@@ -84,10 +86,10 @@ sub usage {
     my $usage = "";
     my($v, @help, @commands);
 
-    my($name, $version, $cmd, $struct, $args, $summary, $error) = map
-        $self->{$_} || '', qw/name version cmd struct args summary error/;
+    my($name, $version, $cmd, $struct, $args, $summary, $error, $post_usage) = map
+        $self->{$_} || '', qw/name version cmd struct args summary error post_usage/;
 
-    $usage .= "$error\n" if defined $error;
+    $usage .= "$error\n" if $error;
 
     if($name) {
         $usage .= $name;
@@ -102,7 +104,6 @@ sub usage {
         $usage .= "usage: $cmd [options] COMMAND $args\n\n";
     }
 
-    my $indent = '   ';
     for my $o (@$struct) {
         my($opts, $desc) = @$o;
         next unless defined $desc;
@@ -110,23 +111,25 @@ sub usage {
         my $optname = join
             (', ', map { (length($_) > 1 ? '--' : '-').$_ } @onames);
         $optname = "    ".$optname unless length($onames[0]) == 1;
-        push @help, [ $indent, $optname, ucfirst($desc) ];
+        push @help, [ $optname, ucfirst($desc) ];
     }
 
     require Text::Table;
-    my $sep = '   ';
-    $usage .= 'options:';
-    $usage .= Text::Table->new(' ', '', \$sep, '')->load(@help)->stringify."\n";
+    my $sep = \'   ';
+    $usage .= "options:\n";
+    $usage .= Text::Table->new($sep, '', $sep, '')->load(@help)->stringify."\n";
 
     unless ($self->command) {
         for my $command (sort keys %$summary) {
-            push @commands, [ $indent, $command, $summary->{$command} ];
+            push @commands, [ $command, $summary->{$command} ];
         }
 
-        $usage .= 'Implemented commands are:';
-        $usage .= Text::Table->new(' ', ' ', \$sep, '')->load(@commands)->stringify."\n";
+        $usage .= "Implemented commands are:\n";
+        $usage .= Text::Table->new($sep, '', $sep, '')->load(@commands)->stringify."\n";
         $usage .= "See '$cmd COMMAND --help' for more information on a specific command.\n";
     }
+    
+    $usage .= $post_usage if defined $post_usage;
 
     return $usage;
 }
