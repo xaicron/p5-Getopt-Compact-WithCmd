@@ -142,7 +142,7 @@ sub usage {
         $usage .= "See '$cmd COMMAND --help' for more information on a specific command.\n";
     }
     
-    $usage .= $post_usage if defined $post_usage;
+    $usage .= "$post_usage\n" if defined $post_usage;
 
     return $usage;
 }
@@ -220,15 +220,136 @@ __END__
 
 =head1 NAME
 
-Getopt::Compact::WithCmd -
+Getopt::Compact::WithCmd - sub-command friendly, like Getopt::Compact
 
 =head1 SYNOPSIS
 
+insied foo.pl:
+
   use Getopt::Compact::WithCmd;
+  
+  my $go = Getopt::Compact::WithCmd->new(
+     name          => 'foo',
+     version       => '0.1',
+     args          => 'FILE',
+     global_struct => [
+        [ [qw/f force/], 'force overwrite', '!', \my $force ],
+     ],
+     command_struct => {
+        get => {
+            options    => [
+                [ [qw/d dir/], 'dest dir', '=s', undef, { default => '.' } ],
+                [ [qw/o output/], 'output file name', '=s', undef, { required => 1 }],
+            ],
+            desc       => 'get file from url',
+            args       => 'url',
+            post_usage => 'blah blah blah',
+        },
+        remove => {
+            ...
+        }
+     },
+  );
+  
+  my $opts = $go->opts;
+  my $cmd  = $go->command;
+  
+  if ($cmd eq 'get') {
+      my $url = shift @ARGV;
+  }
+
+how will be like this:
+
+  $ ./foo.pl -f get -o bar.html http://example.com/
+
+usage, running the command './foo.pl -x' results in the following output:
+
+  $ ./foo.pl -x
+  Unknown option: x
+  foo v0.1
+  usage: hoge.pl [options] COMMAND FILE
+  
+  options:
+     -h, --help    This help message
+     -f, --force   Force overwrite
+  
+  Implemented commands are:
+     get   Get file from url
+  
+  See 'hoge.pl COMMAND --help' for more information on a specific command.
+
+in addition, running the command './foo.pl get' results in the following output:
+
+  $ ./foo.pl get
+  `--output` option must be specified
+  foo v0.1
+  usage: hoge.pl COMMAND [options] url
+  
+  options:
+     -h, --help     This help message
+     -d, --dir      Dest dir
+     -o, --output   Output file name
+  
+  blah blah blah
 
 =head1 DESCRIPTION
 
-Getopt::Compact::WithCmd is
+Getopt::Compact::WithCmd is yet another Getopt::* module.
+This module is respected L<Getopt::Compact>.
+This module is you can define of git-like option.
+In addition, usage can be set at the same time.
+
+=head1 METHODS
+
+=head2 new(%args)
+
+Create an object.
+The option most Getopt::Compact compatible.
+But I<struct> is cannot use.
+
+The new I<%args> are:
+
+=over
+
+=item C<< global_struct($arrayref) >>
+
+This option is sets common options across commands.
+This option value is Getopt::Compact compatible.
+In addition, extended to other values can be set.
+
+  use Getopt::Compact::WithCmd;
+  my $go = Getopt::Compact::WithCmd->new(
+      global_struct => [
+          [ $name_spec_arrayref, $description_scalar, $argument_spec_scalar, \$destination_scalar, $opt_hashref],
+          [ ... ]
+      ],
+  );
+
+I<$opt_hasref> are:
+
+  {
+      default  => $value, # default value
+      required => $bool,
+  }
+
+=item C<< command_struct($hashref) >>
+
+=back
+
+=head2 opts
+
+
+=head2 command
+
+
+=head2 is_success
+
+
+=head2 usage
+
+
+=head2 show_usage
+
 
 =head1 AUTHOR
 
