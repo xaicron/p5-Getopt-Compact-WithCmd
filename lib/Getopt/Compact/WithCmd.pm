@@ -13,18 +13,18 @@ our $VERSION = '0.01';
 sub new {
     my ($class, %args) = @_;
     my $self = bless {
-        cmd        => $args{cmd} || do { require File::Basename; File::Basename::basename($0) },
-        name       => $args{name},
-        version    => $args{version} || $::VERSION,
-        modes      => $args{modes},
-        opts       => {},
-        usage      => exists $args{usage} && !$args{usage} ? 0 : 1,
-        args       => $args{args} || '',
-        struct     => [],
-        summary    => {},
-        requires   => {},
-        error      => undef,
-        post_usage => undef,
+        cmd         => $args{cmd} || do { require File::Basename; File::Basename::basename($0) },
+        name        => $args{name},
+        version     => $args{version} || $::VERSION,
+        modes       => $args{modes},
+        opts        => {},
+        usage       => exists $args{usage} && !$args{usage} ? 0 : 1,
+        args        => $args{args} || '',
+        struct      => [],
+        summary     => {},
+        requires    => {},
+        error       => undef,
+        other_usage => undef,
     }, $class;
 
     my %config = (DEFAULT_CONFIG, %{$args{configure} || {}});
@@ -69,13 +69,13 @@ sub new {
 
     $self->{command} = $command;
     $self->_init_struct($command_struct->{$command}->{options});
-    for my $key (qw/args post_usage/) {
+    for my $key (qw/args other_usage/) {
         $self->{$key} = $command_struct->{$command}{$key} if exists $command_struct->{$command}{$key};
     }
     my $opthash = $self->_parse_struct;
     $self->{ret} = GetOptionsFromArray(\@ARGV, %$opthash);
     $self->_check_requires;
-    
+
     return $self;
 }
 
@@ -99,8 +99,8 @@ sub usage {
     my $usage = "";
     my($v, @help, @commands);
 
-    my($name, $version, $cmd, $struct, $args, $summary, $error, $post_usage) = map
-        $self->{$_} || '', qw/name version cmd struct args summary error post_usage/;
+    my($name, $version, $cmd, $struct, $args, $summary, $error, $other_usage) = map
+        $self->{$_} || '', qw/name version cmd struct args summary error other_usage/;
 
     $usage .= "$error\n" if $error;
 
@@ -109,7 +109,7 @@ sub usage {
         $usage .= " v$version" if $version;
         $usage .= "\n";
     }
-    
+
     if ($self->command) {
         $usage .= "usage: $cmd COMMAND [options] $args\n\n";
     }
@@ -141,8 +141,8 @@ sub usage {
         $usage .= Text::Table->new($sep, '', $sep, '')->load(@commands)->stringify."\n";
         $usage .= "See '$cmd COMMAND --help' for more information on a specific command.\n";
     }
-    
-    $usage .= "$post_usage\n" if defined $post_usage;
+
+    $usage .= "$other_usage\n" if defined $other_usage;
 
     return $usage;
 }
@@ -156,7 +156,7 @@ sub show_usage {
 sub _parse_struct {
     my ($self) = @_;
     my $struct = $self->{struct};
-    
+
     my $opthash = {};
     for my $s (@$struct) {
         my($m, $descr, $spec, $ref, $opts) = @$s;
