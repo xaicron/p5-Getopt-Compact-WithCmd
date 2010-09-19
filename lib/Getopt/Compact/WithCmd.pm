@@ -192,11 +192,6 @@ sub _init_struct {
 
     unshift @{$self->{struct}}, [[qw(h help)], qq(this help message)]
         if $self->{usage} && !$self->_has_option('help');
-
-#    unless($self->_has_option('man')) {
-#        push @{$self->{struct}}, ['man', qq(Display documentation)];
-#        $self->{_allow_man} = 1;
-#    }
 }
 
 sub _check_requires {
