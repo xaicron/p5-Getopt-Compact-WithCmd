@@ -25,6 +25,7 @@ sub new {
         requires    => {},
         error       => undef,
         other_usage => undef,
+        _struct     => $args{command_struct} || {},
     }, $class;
 
     my %config = (DEFAULT_CONFIG, %{$args{configure} || {}});
@@ -61,6 +62,15 @@ sub new {
         $self->{ret} = 1;
         return $self;
     }
+
+    unless ($command_map->{help}) {
+        $command_map->{help} = 1;
+        $args{command_struct}->{help} = {
+            args => '[COMMAND]',
+            desc => 'show help message',
+        };
+    }
+
     unless ($command_map->{$command}) {
         $self->{error} = "Unknown command: $command";
         $self->{ret} = 0;
@@ -68,10 +78,14 @@ sub new {
     }
 
     $self->{command} = $command;
-    $self->_init_struct($command_struct->{$command}->{options});
-    for my $key (qw/args other_usage/) {
-        $self->{$key} = $command_struct->{$command}{$key} if exists $command_struct->{$command}{$key};
+
+    if ($command eq 'help') {
+        $self->{ret} = 0;
+        return $self;
     }
+
+    $self->_init_struct($command_struct->{$command}->{options});
+    $self->_extends_usage($command_struct->{$command});
     my $opthash = $self->_parse_struct;
     $self->{ret} = GetOptionsFromArray(\@ARGV, %$opthash);
     $self->_check_requires;
@@ -87,6 +101,20 @@ sub opts {
     my($self) = @_;
     my $opt = $self->{opt};
     if ($self->{usage} && ($opt->{help} || $self->status == 0)) {
+        if (defined $self->command && $self->command eq 'help') {
+            delete $self->{command};
+            if (defined(my $target = shift @ARGV)) {
+                unless (ref $self->{_struct}{$target} eq 'HASH') {
+                    $self->{error} = "Unknown command: $target";
+                }
+                else {
+                    $self->{command} = $target;
+                    $self->_init_struct($self->{_struct}{$target}{options});
+                    $self->_extends_usage($self->{_struct}{$target});
+                }
+            }
+        }
+
         # display usage message & exit
         print $self->usage;
         exit !$self->status;
@@ -111,7 +139,8 @@ sub usage {
     }
 
     if ($self->command) {
-        $usage .= "usage: $cmd COMMAND [options] $args\n\n";
+        my $sub_command = $self->command;
+        $usage .= "usage: $cmd $sub_command [options] $args\n\n";
     }
     else {
         $usage .= "usage: $cmd [options] COMMAND $args\n\n";
@@ -139,10 +168,10 @@ sub usage {
 
         $usage .= "Implemented commands are:\n";
         $usage .= Text::Table->new($sep, '', $sep, '')->load(@commands)->stringify."\n";
-        $usage .= "See '$cmd COMMAND --help' for more information on a specific command.\n";
+        $usage .= "See '$cmd help COMMAND' for more information on a specific command.\n";
     }
 
-    $usage .= "$other_usage\n" if defined $other_usage;
+    $usage .= "$other_usage\n" if defined $other_usage && length $other_usage > 0;
 
     return $usage;
 }
@@ -150,7 +179,7 @@ sub usage {
 sub show_usage {
     my ($self) = @_;
     print $self->usage;
-    exit !$self->{ret};
+    exit !$self->status;
 }
 
 sub _parse_struct {
@@ -192,6 +221,13 @@ sub _init_struct {
 
     unshift @{$self->{struct}}, [[qw(h help)], qq(this help message)]
         if $self->{usage} && !$self->_has_option('help');
+}
+
+sub _extends_usage {
+    my ($self, $command_option) = @_;
+    for my $key (qw/args other_usage/) {
+        $self->{$key} = $command_option->{$key} if exists $command_option->{$key};
+    }
 }
 
 sub _check_requires {
@@ -403,7 +439,7 @@ Gets usage message.
 Display usage message and exit.
 
   $go->show_usage;
-  
+
 =head2 pod2usage
 
 B<Not implemented.>
