@@ -241,9 +241,9 @@ insied foo.pl:
                 [ [qw/d dir/], 'dest dir', '=s', undef, { default => '.' } ],
                 [ [qw/o output/], 'output file name', '=s', undef, { required => 1 }],
             ],
-            desc       => 'get file from url',
-            args       => 'url',
-            post_usage => 'blah blah blah',
+            desc        => 'get file from url',
+            args        => 'url',
+            other_usage => 'blah blah blah',
         },
         remove => {
             ...
@@ -334,22 +334,84 @@ I<$opt_hasref> are:
 
 =item C<< command_struct($hashref) >>
 
+This option is sets sub-command and options.
+
+  use Getopt::Compact::WithCmd;
+  my $go = Getopt::Compact::WithCmd->new(
+      command_struct => {
+          $command => {
+              options     => $options,
+              args        => $args,
+              desc        => $description,
+              other_usage => $other_usage,
+          },
+      },
+  );
+
+I<$options>
+
+This value is compatible to C<global_struct>.
+
+I<$args>
+
+command args.
+
+I<$description>
+
+command description.
+
+I<$other_usage>
+
+other usage message.
+be added to the end of the usage message.
+
 =back
 
 =head2 opts
 
+Returns a hashref of options keyed by option name.
+Return value is merged global options and command options.
 
 =head2 command
 
+Gets sub-command name.
+
+  # inside foo.pl
+  use Getopt::Compact::WithCmd;
+  
+  my $go = Getopt::Compact::WithCmd->new(
+     command_struct => {
+        bar => {},
+     },
+  );
+  
+  print "command: ", $go->command, "\n";
+  
+  # running the command
+  $ ./foo.pl bar
+  bar
 
 =head2 is_success
 
+Alias of C<status>
+
+  $go->is_success # == $go->status
 
 =head2 usage
 
+Gets usage message.
+
+  my $message = $go->usage;
 
 =head2 show_usage
 
+Display usage message and exit.
+
+  $go->show_usage;
+  
+=head2 pod2usage
+
+B<Not implemented.>
 
 =head1 AUTHOR
 
