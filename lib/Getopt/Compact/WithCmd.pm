@@ -244,11 +244,12 @@ sub _check_requires {
 
 sub _option_names {
     my($self, $m) = @_;
-    return sort {
+    my @sorted = sort {
         my ($la, $lb) = (length($a), length($b));
         return $la <=> $lb if $la < 2 or $lb < 2;
         return 0;
     } ref $m eq 'ARRAY' ? @$m : $m;
+    return @sorted;
 }
 
 sub _has_option {
