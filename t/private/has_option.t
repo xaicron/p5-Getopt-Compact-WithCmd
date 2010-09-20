@@ -6,7 +6,7 @@ use Getopt::Compact::WithCmd;
 sub test_has_option {
     my %specs = @_;
     my ($input, $expects, $struct, $desc) = @specs{qw/input expects struct desc/};
-    
+
     subtest $desc => sub {
         my $go = bless {}, 'Getopt::Compact::WithCmd';
         $go->{struct} = $struct || [];

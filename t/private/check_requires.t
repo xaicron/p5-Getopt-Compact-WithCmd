@@ -6,12 +6,12 @@ use Getopt::Compact::WithCmd;
 sub test_check_requires {
     my %specs = @_;
     my ($params, $expects, $desc) = @specs{qw/params expects desc/};
-    
+
     subtest $desc => sub {
         my $go = bless {}, 'Getopt::Compact::WithCmd';
         $go->{opt}      = $params->{opt};
         $go->{requires} = $params->{requires};
-        
+
         ok $expects ? $go->_check_requires : !$go->_check_requires, 'check_requires';
     };
 }
