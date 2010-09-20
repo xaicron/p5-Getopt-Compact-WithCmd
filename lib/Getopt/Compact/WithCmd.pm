@@ -3,7 +3,6 @@ package Getopt::Compact::WithCmd;
 use strict;
 use warnings;
 use 5.008_001;
-use base 'Getopt::Compact';
 use Getopt::Long qw/GetOptionsFromArray/;
 use Carp;
 use constant DEFAULT_CONFIG => (no_auto_abbrev => 1, bundling => 1);
@@ -94,7 +93,8 @@ sub new {
 }
 
 sub command    { $_[0]->{command} }
-sub is_success { $_[0]->status    }
+sub status     { $_[0]->{ret}     }
+sub is_success { $_[0]->{ret}     }
 sub pod2usage  { carp 'Not implemented' }
 
 sub opts {
@@ -209,7 +209,7 @@ sub _init_struct {
     my ($self, $struct) = @_;
     $self->{struct} = $struct || [];
 
-    if ($self->{modes}) {
+    if (ref $self->{modes} eq 'ARRAY') {
         my @modeopt;
         for my $m (@{$self->{modes}}) {
             my($mc) = $m =~ /^(\w)/;
@@ -240,6 +240,21 @@ sub _check_requires {
         }
     }
     return 1;
+}
+
+sub _option_names {
+    my($self, $m) = @_;
+    return sort {
+        my ($la, $lb) = (length($a), length($b));
+        return $la <=> $lb if $la < 2 or $lb < 2;
+        return 0;
+    } ref $m eq 'ARRAY' ? @$m : $m;
+}
+
+sub _has_option {
+    my($self, $option) = @_;
+    return 1 if grep { $_ eq $option } map { $self->_option_names($_->[0]) } @{$self->{struct}};
+    return 0;
 }
 
 1;
