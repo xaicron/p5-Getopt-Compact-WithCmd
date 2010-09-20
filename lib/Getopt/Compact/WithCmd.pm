@@ -438,6 +438,12 @@ Gets sub-command name.
   $ ./foo.pl bar
   bar
 
+=head2 status
+
+This is a true value if the command line was processed successfully. Otherwise it returns a false result.
+
+  $go->status ? "success" : "fail";
+
 =head2 is_success
 
 Alias of C<status>
