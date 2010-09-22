@@ -16,12 +16,13 @@ sub new {
         name        => $args{name},
         version     => $args{version} || $::VERSION,
         modes       => $args{modes},
-        opts        => {},
+        opt         => {},
         usage       => exists $args{usage} && !$args{usage} ? 0 : 1,
         args        => $args{args} || '',
         struct      => [],
         summary     => {},
         requires    => {},
+        ret         => 0,
         error       => undef,
         other_usage => undef,
         _struct     => $args{command_struct} || {},
@@ -33,7 +34,7 @@ sub new {
 
     if (my $command_struct = $args{command_struct}) {
         for my $key (keys %$command_struct) {
-            $self->{summary}{$key} = ucfirst($command_struct->{$key}->{desc} || '');
+            $self->{summary}{$key} = $command_struct->{$key}->{desc} || '';
         }
     }
 
@@ -163,7 +164,7 @@ sub usage {
 
     unless ($self->command) {
         for my $command (sort keys %$summary) {
-            push @commands, [ $command, $summary->{$command} ];
+            push @commands, [ $command, ucfirst $summary->{$command} ];
         }
 
         $usage .= "Implemented commands are:\n";
@@ -207,7 +208,7 @@ sub _parse_struct {
 
 sub _init_struct {
     my ($self, $struct) = @_;
-    $self->{struct} = $struct || [];
+    $self->{struct} = ref $struct eq 'ARRAY' ? $struct : [];
 
     if (ref $self->{modes} eq 'ARRAY') {
         my @modeopt;
@@ -271,7 +272,7 @@ Getopt::Compact::WithCmd - sub-command friendly, like Getopt::Compact
 
 =head1 SYNOPSIS
 
-insied foo.pl:
+inside foo.pl:
 
   use Getopt::Compact::WithCmd;
   
