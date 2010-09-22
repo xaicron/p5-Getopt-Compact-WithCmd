@@ -49,7 +49,7 @@ sub new {
         }
 
         if (@gopts) {
-            $self->{ret} = GetOptionsFromArray(\@gopts, %$opthash);
+            $self->{ret} = $self->_parse_option(\@gopts, $opthash) ? 1 : 0;
             return $self unless $self->{ret};
         }
         return $self unless $self->_check_requires;
@@ -87,7 +87,7 @@ sub new {
     $self->_init_struct($command_struct->{$command}->{options});
     $self->_extends_usage($command_struct->{$command});
     my $opthash = $self->_parse_struct;
-    $self->{ret} = GetOptionsFromArray(\@ARGV, %$opthash);
+    $self->{ret} = $self->_parse_option(\@ARGV, $opthash);
     $self->_check_requires;
 
     return $self;
@@ -181,6 +181,15 @@ sub show_usage {
     my ($self) = @_;
     print $self->usage;
     exit !$self->status;
+}
+
+sub _parse_option {
+    my ($self, $argv, $opthash) = @_;
+    local $SIG{__WARN__} = sub {
+        $self->{error} = join '', @_;
+        chomp $self->{error};
+    };
+    return GetOptionsFromArray($argv, %$opthash) ? 1 : 0;
 }
 
 sub _parse_struct {
