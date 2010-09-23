@@ -8,7 +8,7 @@ use Getopt::Compact::WithCmd;
 sub test_usage {
     my %specs = @_;
     my ($args, $expects, $desc, $extra_test, $argv)
-        = @specs{qw/args expects desc extra_test, argv/};
+        = @specs{qw/args expects desc extra_test argv/};
 
     $expects =~ s/%FILE%/basename($0)/gmse;
 
