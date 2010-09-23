@@ -341,7 +341,7 @@ usage, running the command './foo.pl -x' results in the following output:
   Implemented commands are:
      get   Get file from url
   
-  See 'hoge.pl COMMAND --help' for more information on a specific command.
+  See 'hoge.pl help COMMAND' for more information on a specific command.
 
 in addition, running the command './foo.pl get' results in the following output:
 
