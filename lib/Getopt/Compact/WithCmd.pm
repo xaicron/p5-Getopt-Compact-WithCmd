@@ -126,7 +126,7 @@ sub opts {
 sub usage {
     my($self) = @_;
     my $usage = "";
-    my($v, @help, @commands);
+    my(@help, @commands);
 
     my($name, $version, $cmd, $struct, $args, $summary, $error, $other_usage) = map
         $self->{$_} || '', qw/name version cmd struct args summary error other_usage/;
@@ -141,11 +141,13 @@ sub usage {
 
     if ($self->command) {
         my $sub_command = $self->command;
-        $usage .= "usage: $cmd $sub_command [options] $args\n\n";
+        $usage .= "usage: $cmd $sub_command [options]";
     }
     else {
-        $usage .= "usage: $cmd [options] COMMAND $args\n\n";
+        $usage .= "usage: $cmd [options]";
+        $usage .= ' COMMAND' if keys %$summary;
     }
+    $usage .= ($args ? " $args" : '') . "\n\n";
 
     for my $o (@$struct) {
         my($opts, $desc) = @$o;
@@ -157,19 +159,25 @@ sub usage {
         push @help, [ $optname, ucfirst($desc) ];
     }
 
-    require Text::Table;
-    my $sep = \'   ';
-    $usage .= "options:\n";
-    $usage .= Text::Table->new($sep, '', $sep, '')->load(@help)->stringify."\n";
+    if (@help) {
+        require Text::Table;
+        my $sep = \'   ';
+        $usage .= "options:\n";
+        $usage .= Text::Table->new($sep, '', $sep, '')->load(@help)->stringify."\n";
+    }
 
     unless ($self->command) {
         for my $command (sort keys %$summary) {
             push @commands, [ $command, ucfirst $summary->{$command} ];
         }
 
-        $usage .= "Implemented commands are:\n";
-        $usage .= Text::Table->new($sep, '', $sep, '')->load(@commands)->stringify."\n";
-        $usage .= "See '$cmd help COMMAND' for more information on a specific command.\n";
+        if (@commands) {
+            require Text::Table;
+            my $sep = \'   ';
+            $usage .= "Implemented commands are:\n";
+            $usage .= Text::Table->new($sep, '', $sep, '')->load(@commands)->stringify."\n";
+            $usage .= "See '$cmd help COMMAND' for more information on a specific command.\n\n";
+        }
     }
 
     $usage .= "$other_usage\n" if defined $other_usage && length $other_usage > 0;
