@@ -4,7 +4,7 @@ all_from 'lib/Getopt/Compact/WithCmd.pm';
 
 requires 'Text::Table';
 
-build_requires 'Test::More', 0.88;
+test_requires 'Test::More', 0.96;
 test_requires 'Test::Output';
 
 tests_recursive 't';
