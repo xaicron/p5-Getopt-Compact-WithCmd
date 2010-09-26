@@ -254,7 +254,7 @@ sub _check_requires {
         unless (defined $self->{opt}{$dest}) {
             $self->{ret}   = 0;
             $self->{error} = "`--$dest` option must be specified";
-            return;
+            return 0;
         }
     }
     return 1;
