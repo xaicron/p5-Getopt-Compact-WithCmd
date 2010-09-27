@@ -4,7 +4,6 @@ use strict;
 use warnings;
 use 5.008_001;
 use Getopt::Long qw/GetOptionsFromArray/;
-use Carp;
 use constant DEFAULT_CONFIG => (no_auto_abbrev => 1, bundling => 1);
 
 our $VERSION = '0.01';
@@ -96,7 +95,7 @@ sub new {
 sub command    { $_[0]->{command} }
 sub status     { $_[0]->{ret}     }
 sub is_success { $_[0]->{ret}     }
-sub pod2usage  { carp 'Not implemented' }
+sub pod2usage  { require Carp; Carp::carp('Not implemented') }
 
 sub opts {
     my($self) = @_;
