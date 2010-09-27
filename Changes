@@ -1,4 +1,8 @@
 Revision history for Perl extension Getopt::Compact::WithCmd
 
+0.02  Sun Sep 26 15:09:58 2010
+      [Bug Fixes]
+        - maybe fixed fail test problem
+
 0.01  Sun Sep 12 04:55:02 2010
         - original version

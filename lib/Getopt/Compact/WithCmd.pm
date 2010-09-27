@@ -6,7 +6,7 @@ use 5.008_001;
 use Getopt::Long qw/GetOptionsFromArray/;
 use constant DEFAULT_CONFIG => (no_auto_abbrev => 1, bundling => 1);
 
-our $VERSION = '0.01';
+our $VERSION = '0.02';
 
 sub new {
     my ($class, %args) = @_;
@@ -253,7 +253,7 @@ sub _check_requires {
         unless (defined $self->{opt}{$dest}) {
             $self->{ret}   = 0;
             $self->{error} = "`--$dest` option must be specified";
-            return;
+            return 0;
         }
     }
     return 1;

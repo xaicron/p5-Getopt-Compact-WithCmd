@@ -12,7 +12,7 @@ sub test_check_requires {
         $go->{opt}      = $params->{opt};
         $go->{requires} = $params->{requires};
 
-        ok $expects ? $go->_check_requires : !$go->_check_requires, 'check_requires';
+        is +$go->_check_requires, $expects, 'check_requires';
     };
 }
 
