@@ -1,5 +1,12 @@
 Revision history for Perl extension Getopt::Compact::WithCmd
 
+0.03  Tue Sep 28 23:26:44 2010
+      [Bug Fixes]
+        - Getopt::Long 2.38 or later
+
+      [Other]
+        - Loads faster
+
 0.02  Sun Sep 26 15:09:58 2010
       [Bug Fixes]
         - maybe fixed fail test problem
