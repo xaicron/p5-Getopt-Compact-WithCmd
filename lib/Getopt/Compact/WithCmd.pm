@@ -37,13 +37,7 @@ sub new {
         $self->_init_struct($global_struct);
         my $opthash = $self->_parse_struct;
 
-        my @gopts;
-        while (@ARGV) {
-            last unless $ARGV[0] =~ /^-/;
-            push @gopts, shift @ARGV;
-        }
-
-        if (@gopts) {
+        if (my @gopts = $self->_parse_argv) {
             $self->{ret} = $self->_parse_option(\@gopts, $opthash) ? 1 : 0;
             return $self unless $self->{ret};
         }
@@ -193,6 +187,15 @@ sub _parse_option {
         chomp $self->{error};
     };
     return GetOptionsFromArray($argv, %$opthash) ? 1 : 0;
+}
+
+sub _parse_argv {
+    my @opts;
+    while (@ARGV) {
+        last unless $ARGV[0] =~ /^-/;
+        push @opts, shift @ARGV;
+    }
+    return @opts;
 }
 
 sub _parse_struct {
