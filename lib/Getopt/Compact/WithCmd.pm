@@ -31,11 +31,7 @@ sub new {
     my @gconf = grep $config{$_}, keys %config;
     Getopt::Long::Configure(@gconf) if @gconf;
 
-    if (my $command_struct = $args{command_struct}) {
-        for my $key (keys %$command_struct) {
-            $self->{summary}{$key} = $command_struct->{$key}->{desc} || '';
-        }
-    }
+    $self->_init_summary($args{command_struct});
 
     if (my $global_struct = $args{global_struct}) {
         $self->_init_struct($global_struct);
@@ -238,6 +234,18 @@ sub _init_struct {
 
     unshift @{$self->{struct}}, [[qw(h help)], qq(this help message)]
         if $self->{usage} && !$self->_has_option('help');
+}
+
+sub _init_summary {
+    my ($self, $command_struct) = @_;
+    if ($command_struct) {
+        for my $key (keys %$command_struct) {
+            $self->{summary}{$key} = $command_struct->{$key}->{desc} || '';
+        }
+    }
+    else {
+        $self->{summary} = {};
+    }
 }
 
 sub _extends_usage {
