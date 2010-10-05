@@ -37,11 +37,18 @@ sub new {
         $self->_init_struct($global_struct);
         my $opthash = $self->_parse_struct;
 
-        if (my @gopts = $self->_parse_argv) {
-            $self->{ret} = $self->_parse_option(\@gopts, $opthash) ? 1 : 0;
-            return $self unless $self->{ret};
+        if ($args{command_struct}) {
+            if (my @gopts = $self->_parse_argv) {
+                $self->{ret} = $self->_parse_option(\@gopts, $opthash) ? 1 : 0;
+                return $self unless $self->{ret};
+            }
+            return $self unless $self->_check_requires;
         }
-        return $self unless $self->_check_requires;
+        else {
+            $self->{ret} = $self->_parse_option(\@ARGV, $opthash) ? 1 : 0;
+            return $self unless $self->_check_requires;
+            return $self;
+        }
     }
 
     my $command_struct = $args{command_struct} || {};

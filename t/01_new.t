@@ -320,6 +320,30 @@ test_new(
 
 test_new(
     args => {
+        usage => 0,
+        global_struct => [
+            [ [qw/f foo/], 'foo', '=s', undef, { required => 1 } ],
+        ],
+    },
+    expects => {
+        usage => 0,
+        struct => [
+            [ [qw/f foo/], 'foo', '=s', undef, { required => 1 } ],
+        ],
+        requires => {
+            foo => 1,
+        },
+        opt => {
+            foo => 'bar',
+        },
+    },
+    argv => [qw/--foo bar baz/],
+    expects_argv => [qw/baz/],
+    desc => 'with global_struct / --foo bar (not registered command_struct',
+);
+
+test_new(
+    args => {
         command_struct => {
             foo => {},
         },
