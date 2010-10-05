@@ -46,7 +46,7 @@ sub new {
         }
         else {
             $self->{ret} = $self->_parse_option(\@ARGV, $opthash) ? 1 : 0;
-            return $self unless $self->_check_requires;
+            $self->_check_requires;
             return $self;
         }
     }
