@@ -1,5 +1,9 @@
 Revision history for Perl extension Getopt::Compact::WithCmd
 
+0.04  Wed Oct  6 02:13:27 2010
+      [Other]
+        - Getopt:: Compact compatible (if we have not defined command_struct)
+
 0.03  Tue Sep 28 23:26:44 2010
       [Bug Fixes]
         - Getopt::Long 2.38 or later
