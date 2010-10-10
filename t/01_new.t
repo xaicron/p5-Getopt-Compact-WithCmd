@@ -242,7 +242,6 @@ test_new(
     );
 };
 
-
 {
     my $foo;
     test_new(
@@ -256,6 +255,32 @@ test_new(
             usage => 0,
             struct => [
                 [ [qw/f foo/], 'foo', '=s', \$foo, { default => 'bar' } ],
+            ],
+        },
+        argv => [],
+        expects_argv => [],
+        extra_test => sub {
+            is $foo, 'bar', 'default value';
+        },
+        desc => 'with global_struct / spec, dest, default',
+    );
+
+};
+
+{
+    my $foo;
+    my $coderef = sub { $foo = $_[1] };
+    test_new(
+        args => {
+            usage => 0,
+            global_struct => [
+                [ [qw/f foo/], 'foo', '=s', $coderef, { default => 'bar' } ],
+            ],
+        },
+        expects => {
+            usage => 0,
+            struct => [
+                [ [qw/f foo/], 'foo', '=s', $coderef, { default => 'bar' } ],
             ],
         },
         argv => [],
@@ -340,6 +365,74 @@ test_new(
     argv => [qw/--foo bar baz/],
     expects_argv => [qw/baz/],
     desc => 'with global_struct / --foo bar (not registered command_struct',
+);
+
+{
+    my $coderef = sub { };
+    test_new(
+        args => {
+            usage => 0,
+            global_struct => [
+                [ [qw/f foo/], 'foo', '=s', undef, { default => $coderef } ],
+            ],
+        },
+        expects => {
+            usage => 0,
+            struct => [
+                [ [qw/f foo/], 'foo', '=s', undef, { default => $coderef } ],
+            ],
+            opt => {
+                foo => undef,
+            },
+            error => 'Invalid default option for foo',
+            ret => 0,
+        },
+        argv => [],
+        expects_argv => [],
+        desc => 'with global_struct / invalid default option',
+    );
+}
+
+test_new(
+    args => {
+        usage => 0,
+        global_struct => [
+            [ [qw/f foo/], 'foo', '=s%', undef, { default => { bar => 'baz' } } ],
+        ],
+    },
+    expects => {
+        usage => 0,
+        struct => [
+            [ [qw/f foo/], 'foo', '=s%', undef, { default => { bar => 'baz' } } ],
+        ],
+        opt => {
+            foo => { bar => 'baz' },
+        },
+    },
+    argv => [],
+    expects_argv => [],
+    desc => 'with global_struct / default hashref',
+);
+
+test_new(
+    args => {
+        usage => 0,
+        global_struct => [
+            [ [qw/f foo/], 'foo', '=s%', undef ],
+        ],
+    },
+    expects => {
+        usage => 0,
+        struct => [
+            [ [qw/f foo/], 'foo', '=s%', undef ],
+        ],
+        opt => {
+            foo => { bar => 'baz', hoge => 'fuga' },
+        },
+    },
+    argv => [qw/--foo bar=baz --foo=hoge=fuga piyo/],
+    expects_argv => [qw/piyo/],
+    desc => 'with global_struct / --foo bar=baz --foo=hoge=fuga',
 );
 
 test_new(

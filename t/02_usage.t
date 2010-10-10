@@ -336,4 +336,22 @@ options:
 
 USAGE
 
+test_usage(
+    args => {
+        global_struct => [
+            [ [qw/f foo/], 'foo', undef, undef, { default => sub {} } ],
+        ],
+    },
+    argv => [qw/hoge --hoge/],
+    desc => 'with global_struct / Invalid default option',
+    expects => << 'USAGE');
+Invalid default option for foo
+usage: %FILE% [options]
+
+options:
+   -h, --help   This help message
+   -f, --foo    Foo              
+
+USAGE
+
 done_testing;

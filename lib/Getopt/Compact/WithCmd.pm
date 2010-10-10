@@ -35,7 +35,7 @@ sub new {
 
     if (my $global_struct = $args{global_struct}) {
         $self->_init_struct($global_struct);
-        my $opthash = $self->_parse_struct;
+        my $opthash = $self->_parse_struct || return $self;
 
         if ($args{command_struct}) {
             if (my @gopts = $self->_parse_argv) {
@@ -82,7 +82,7 @@ sub new {
 
     $self->_init_struct($command_struct->{$command}->{options});
     $self->_extends_usage($command_struct->{$command});
-    my $opthash = $self->_parse_struct;
+    my $opthash = $self->_parse_struct || return $self;
     $self->{ret} = $self->_parse_option(\@ARGV, $opthash);
     $self->_check_requires;
 
@@ -210,6 +210,8 @@ sub _parse_struct {
     my $struct = $self->{struct};
 
     my $opthash = {};
+    my $default_opthash = {};
+    my $default_args = [];
     for my $s (@$struct) {
         my($m, $descr, $spec, $ref, $opts) = @$s;
         my @onames = $self->_option_names($m);
@@ -217,14 +219,45 @@ sub _parse_struct {
         my $o = join('|', @onames).($spec || '');
         my $dest = $longname ? $longname : $onames[0];
         $opts ||= {};
-        $self->{opt}{$dest} = exists $opts->{default} ? $opts->{default} : undef;
-        if (ref $ref) {
-            my $value = delete $self->{opt}{$dest};
-            $$ref = $value if ref $ref && defined $value;
+        if (exists $opts->{default}) {
+            my $value = $opts->{default};
+            if (ref $value eq 'ARRAY') {
+                push @$default_args, map {
+                    ("--$dest", $_) 
+                } grep { defined $_ } @$value;
+            }
+            elsif (ref $value eq 'HASH') {
+                push @$default_args, map {
+                    (my $key = $_) =~ s/=/\\=/g;
+                    ("--$dest" => "$key=$value->{$_}")
+                } grep {
+                    defined $value->{$_}  
+                } keys %$value;
+            }
+            elsif (not ref $value) {
+                if (!$spec || $spec eq '!') {
+                    push @$default_args, "--$dest" if $value;
+                }
+                else {
+                    push @$default_args, "--$dest", $value if defined $value;
+                }
+            }
+            else {
+                $self->{error} = "Invalid default option for $dest";
+                $self->{ret} = 0;
+            }
+            $default_opthash->{$o} = ref $ref ? $ref : \$self->{opt}{$dest};
         }
         $opthash->{$o} = ref $ref ? $ref : \$self->{opt}{$dest};
         $self->{requires}{$dest} = 1 if $opts->{required};
     }
+
+    return if $self->{error};
+    if (@$default_args) {
+        $self->{ret} = $self->_parse_option($default_args, $default_opthash);
+        return unless $self->{ret};
+    }
+
     return $opthash;
 }
 
