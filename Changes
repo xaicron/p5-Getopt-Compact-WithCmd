@@ -1,5 +1,10 @@
 Revision history for Perl extension Getopt::Compact::WithCmd
 
+0.05  Sun Oct 10 20:54:34 2010
+      [Bug Fixes]
+        - Supported any specs (=s%, =s@ and etc)
+        - $dest can now be specified in coderef
+
 0.04  Wed Oct  6 02:13:27 2010
       [Other]
         - Getopt:: Compact compatible (if we have not defined command_struct)
