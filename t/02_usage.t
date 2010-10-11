@@ -354,4 +354,75 @@ options:
 
 USAGE
 
+test_usage(
+    args => {
+        global_struct => [
+            [ [qw/f foo/], 'foo' ],
+        ],
+        command_struct => {
+            hoge => {
+                desc => 'hoge',
+                other_usage => 'blah blah blah',
+                command_struct => {
+                    fuga => {
+                        options => [
+                            [ [qw/b bar/], 'bar' ],
+                        ],
+                        desc => 'fuga',
+                    },
+                },
+            },
+        },
+    },
+    argv => [qw/hoge/],
+    desc => 'with global_struct / command_struct (impl hoge -> fuga) / @ARGV = hoge',
+    expects => << 'USAGE');
+usage: %FILE% hoge [options]
+
+options:
+   -h, --help   This help message
+
+blah blah blah
+
+Implemented commands are:
+   fuga   Fuga
+
+See '%FILE% hoge COMMAND --help' for more information on a specific command.
+
+USAGE
+
+test_usage(
+    args => {
+        global_struct => [
+            [ [qw/f foo/], 'foo' ],
+        ],
+        command_struct => {
+            hoge => {
+                desc => 'hoge',
+                command_struct => {
+                    fuga => {
+                        options => [
+                            [ [qw/b bar/], 'bar' ],
+                        ],
+                        desc => 'fuga',
+                        args => 'piyo',
+                        other_usage => 'blah blah blah',
+                    },
+                },
+            },
+        },
+    },
+    argv => [qw/hoge fuga/],
+    desc => 'with global_struct / command_struct (impl hoge -> fuga) / @ARGV = hoge, fuga',
+    expects => << 'USAGE');
+usage: %FILE% hoge fuga [options] piyo
+
+options:
+   -h, --help   This help message
+   -b, --bar    Bar              
+
+blah blah blah
+
+USAGE
+
 done_testing;

@@ -24,6 +24,7 @@ sub new {
         ret         => 0,
         error       => undef,
         other_usage => undef,
+        commands    => [],
         _struct     => $args{command_struct} || {},
     }, $class;
 
@@ -51,47 +52,15 @@ sub new {
         }
     }
 
-    my $command_struct = $args{command_struct} || {};
-    my $command_map = { map { $_ => 1 } keys %$command_struct };
-    my $command = shift @ARGV;
-    unless ($command) {
-        $self->{ret} = 1;
-        return $self;
-    }
-
-    unless ($command_map->{help}) {
-        $command_map->{help} = 1;
-        $args{command_struct}->{help} = {
-            args => '[COMMAND]',
-            desc => 'show help message',
-        };
-    }
-
-    unless ($command_map->{$command}) {
-        $self->{error} = "Unknown command: $command";
-        $self->{ret} = 0;
-        return $self;
-    }
-
-    $self->{command} = $command;
-
-    if ($command eq 'help') {
-        $self->{ret} = 0;
-        return $self;
-    }
-
-    $self->_init_struct($command_struct->{$command}->{options});
-    $self->_extends_usage($command_struct->{$command});
-    my $opthash = $self->_parse_struct || return $self;
-    $self->{ret} = $self->_parse_option(\@ARGV, $opthash);
-    $self->_check_requires;
+    $self->_parse_command_struct($args{command_struct});
 
     return $self;
 }
 
-sub command    { $_[0]->{command} }
-sub status     { $_[0]->{ret}     }
-sub is_success { $_[0]->{ret}     }
+sub command    { $_[0]->{command}  }
+sub commands   { $_[0]->{commands} }
+sub status     { $_[0]->{ret}      }
+sub is_success { $_[0]->{ret}      }
 sub pod2usage  { require Carp; Carp::carp('Not implemented') }
 
 sub opts {
@@ -129,14 +98,14 @@ sub usage {
 
     $usage .= "$error\n" if $error;
 
-    if($name) {
+    if ($name) {
         $usage .= $name;
         $usage .= " v$version" if $version;
         $usage .= "\n";
     }
 
     if ($self->command) {
-        my $sub_command = $self->command;
+        my $sub_command = join q{ }, @{$self->commands} ? @{$self->commands} : $self->command;
         $usage .= "usage: $cmd $sub_command [options]";
     }
     else {
@@ -162,7 +131,9 @@ sub usage {
         $usage .= Text::Table->new($sep, '', $sep, '')->load(@help)->stringify."\n";
     }
 
-    unless ($self->command) {
+    $usage .= "$other_usage\n\n" if defined $other_usage && length $other_usage > 0;
+
+    if (!$self->command || $self->{has_sub_command}) {
         for my $command (sort keys %$summary) {
             push @commands, [ $command, ucfirst $summary->{$command} ];
         }
@@ -172,11 +143,14 @@ sub usage {
             my $sep = \'   ';
             $usage .= "Implemented commands are:\n";
             $usage .= Text::Table->new($sep, '', $sep, '')->load(@commands)->stringify."\n";
-            $usage .= "See '$cmd help COMMAND' for more information on a specific command.\n\n";
+            my $help_command = "$cmd help COMMAND";
+            if (@{$self->commands}) {
+                my $sub_commands = join q{ }, @{$self->commands};
+                $help_command = "$cmd $sub_commands COMMAND --help";
+            }
+            $usage .= "See '$help_command' for more information on a specific command.\n\n";
         }
     }
-
-    $usage .= "$other_usage\n" if defined $other_usage && length $other_usage > 0;
 
     return $usage;
 }
@@ -185,6 +159,84 @@ sub show_usage {
     my ($self) = @_;
     print $self->usage;
     exit !$self->status;
+}
+
+sub _parse_command_struct {
+    my ($self, $command_struct) = @_;
+    $command_struct ||= {};
+
+    my $command_map = { map { $_ => 1 } keys %$command_struct };
+    my $command = shift @ARGV;
+    unless ($command) {
+        $self->{ret} = 1;
+        return $self;
+    }
+
+    unless ($command_map->{help}) {
+        $command_map->{help} = 1;
+        $command_struct->{help} = {
+            args => '[COMMAND]',
+            desc => 'show help message',
+        };
+    }
+
+    unless (exists $command_map->{$command}) {
+        $self->{error} = "Unknown command: $command";
+        $self->{ret} = 0;
+        return $self;
+    }
+
+    $self->{command} ||= $command;
+
+    if ($command eq 'help' && @{$self->{commands} ||= []} == 0) {
+        $self->{ret} = 0;
+        if (defined $ARGV[0] && exists $command_struct->{$ARGV[0]}) {
+            my $nested_struct = $command_struct->{$ARGV[0]}{command_struct};
+            $self->_init_nested_struct($nested_struct) if $nested_struct;
+        }
+        return $self;
+    }
+
+    push @{$self->{commands} ||= []}, $command;
+    $self->_init_struct($command_struct->{$command}{options});
+    $self->_extends_usage($command_struct->{$command});
+    my $opthash = $self->_parse_struct || return $self;
+
+    if (my $nested_struct = $command_struct->{$command}{command_struct}) {
+        $self->_init_nested_struct($nested_struct);
+
+        my @opts = $self->_parse_argv;
+        $self->{ret} = $self->_parse_option(\@opts, $opthash);
+        $self->_check_requires;
+        if ($self->_want_help) {
+            delete $self->{error};
+            $self->{ret} = 0;
+        }
+        return $self unless $self->{ret};
+        $self->_parse_command_struct($nested_struct);
+    }
+    else {
+        $self->{ret} = $self->_parse_option(\@ARGV, $opthash);
+        $self->_check_requires;
+        $self->{has_sub_command} = 0;
+        if ($self->_want_help) {
+            delete $self->{error};
+            $self->{ret} = 0;
+        }
+    }
+
+    return $self;
+}
+
+sub _want_help {
+    $_[0]->{opt}{help} ? 1 : 0;
+}
+
+sub _init_nested_struct {
+    my ($self, $nested_struct) = @_;
+    $self->{summary} = {}; # reset
+    $self->_init_summary($nested_struct);
+    $self->{has_sub_command} = 1;
 }
 
 sub _parse_option {

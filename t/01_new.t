@@ -1081,4 +1081,79 @@ test_new(
     desc => 'with command_struct (implemented: foo) / ex augv',
 );
 
+test_new(
+    args => {
+        usage => 0,
+        command_struct => {
+            foo => {
+                desc        => 'bar',
+                args        => 'baz',
+                other_usage => 'free',
+                options     => [
+                    [ [qw/f foo/], 'foo', '=s',  undef, { required => 1 } ],
+                ],
+                command_struct => {
+                    bar => {
+                        desc        => 'bar',
+                        args        => 'piyo',
+                        other_usage => 'hoge hoge',
+                        options     => [
+                            [ [qw/f fuga/], 'fuga' ],
+                        ],
+                    }
+                },
+            },
+        },
+    },
+    expects => {
+        usage => 0,
+        args => 'piyo',
+        other_usage => 'hoge hoge',
+        summary => {
+            bar => 'bar',
+        },
+        _struct => {
+            foo => {
+                desc        => 'bar',
+                args        => 'baz',
+                other_usage => 'free',
+                options     => [
+                    [ [qw/f foo/], 'foo', '=s', undef, { required => 1 } ],
+                ],
+                command_struct => {
+                    bar => {
+                        desc        => 'bar',
+                        args        => 'piyo',
+                        other_usage => 'hoge hoge',
+                        options     => [
+                            [ [qw/f fuga/], 'fuga' ],
+                        ],
+                    },
+                    help => {
+                        desc => 'show help message',
+                        args => '[COMMAND]',
+                    },
+                },
+            },
+            help => {
+                desc => 'show help message',
+                args => '[COMMAND]',
+            },
+        },
+        struct => [
+            [ [qw/f fuga/], 'fuga' ],
+        ],
+        opt => {
+            foo  => 'foo',
+            fuga => 1,
+        },
+        requires => {
+            foo => 1,
+        },
+    },
+    argv => [qw/foo --foo=foo bar baz --fuga/],
+    expects_argv => [qw/baz/],
+    desc => 'with command_struct (implemented: foo -> bar) / ex augv',
+);
+
 done_testing;
