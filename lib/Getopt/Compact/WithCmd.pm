@@ -6,7 +6,7 @@ use 5.008_001;
 use Getopt::Long qw/GetOptionsFromArray/;
 use constant DEFAULT_CONFIG => (no_auto_abbrev => 1, bundling => 1);
 
-our $VERSION = '0.05';
+our $VERSION = '0.06';
 
 sub new {
     my ($class, %args) = @_;
@@ -507,10 +507,11 @@ This option is sets sub-command and options.
   my $go = Getopt::Compact::WithCmd->new(
       command_struct => {
           $command => {
-              options     => $options,
-              args        => $args,
-              desc        => $description,
-              other_usage => $other_usage,
+              options        => $options,
+              args           => $args,
+              desc           => $description,
+              other_usage    => $other_usage,
+              command_struct => $command_struct,
           },
       },
   );
@@ -531,6 +532,30 @@ I<$other_usage>
 
 other usage message.
 be added to the end of the usage message.
+
+I<$command_struct>
+
+support nesting.
+
+  use Getopt::Compact::WithCmd;
+  my $go = Getopt::Compact::WithCmd->new(
+      command_struct => {
+          $command => {
+              options        => $options,
+              args           => $args,
+              desc           => $description,
+              other_usage    => $other_usage,
+              command_struct => {
+                  $sub_command => {
+                      options => ...
+                  },
+              },
+          },
+      },
+  );
+
+  # will run cmd:
+  $ ./foo.pl $command $sub_command ...
 
 =back
 

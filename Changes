@@ -1,5 +1,9 @@
 Revision history for Perl extension Getopt::Compact::WithCmd
 
+0.06  Mon Oct 11 17:25:39 2010
+      [New Features]
+        - command_struct support nesting
+
 0.05  Sun Oct 10 20:54:34 2010
       [Bug Fixes]
         - Supported any specs (=s%, =s@ and etc)
