@@ -93,27 +93,7 @@ test_parse_command_struct(
     expects => {
         ret      => 0,
         command  => 'help',
-        commands => [],
-        opt      => undef,
-        summary  => undef,
-    },
-    args => [qw/help/],
-    desc => 'impl foo / @ARGV = help',
-);
-
-test_parse_command_struct(
-    struct  => {
-        foo => {
-            options => [
-                [ [qw/hoge/], 'hoge' ],
-            ],
-            desc => 'foo',
-        },
-    },
-    expects => {
-        ret      => 0,
-        command  => 'help',
-        commands => [],
+        commands => undef,
         opt      => undef,
         summary  => undef,
     },
@@ -139,7 +119,7 @@ test_parse_command_struct(
     expects => {
         ret      => 0,
         command  => 'help',
-        commands => [],
+        commands => undef,
         opt      => undef,
         summary  => {
             bar => 'bar',   

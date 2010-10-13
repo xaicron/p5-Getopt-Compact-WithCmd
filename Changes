@@ -1,5 +1,9 @@
 Revision history for Perl extension Getopt::Compact::WithCmd
 
+0.10  Thu Oct 14 02:06:58 2010
+      [Bug Fixed]
+        - Fixed help command issue
+
 0.09  Thu Oct 14 01:32:30 2010
       [Bug Fixed]
         - Fixed a problem check_requires did not work

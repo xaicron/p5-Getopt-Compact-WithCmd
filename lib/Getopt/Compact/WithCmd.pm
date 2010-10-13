@@ -6,7 +6,7 @@ use 5.008_001;
 use Getopt::Long qw/GetOptionsFromArray/;
 use constant DEFAULT_CONFIG => (no_auto_abbrev => 1, bundling => 1);
 
-our $VERSION = '0.09';
+our $VERSION = '0.10';
 
 sub new {
     my ($class, %args) = @_;
@@ -191,7 +191,7 @@ sub _parse_command_struct {
 
     $self->{command} ||= $command;
 
-    if ($command eq 'help' && @{$self->{commands} ||= []} == 0) {
+    if ($command eq 'help') {
         $self->{ret} = 0;
         delete $self->{error};
         if (defined $ARGV[0] && exists $command_struct->{$ARGV[0]}) {
