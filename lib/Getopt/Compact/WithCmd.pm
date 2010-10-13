@@ -40,13 +40,16 @@ sub new {
 
         if ($args{command_struct}) {
             if (my @gopts = $self->_parse_argv) {
-                $self->{ret} = $self->_parse_option(\@gopts, $opthash) ? 1 : 0;
+                $self->{ret} = $self->_parse_option(\@gopts, $opthash);
                 return $self unless $self->{ret};
+                return $self if $self->_want_help;
             }
             return $self unless $self->_check_requires;
         }
         else {
-            $self->{ret} = $self->_parse_option(\@ARGV, $opthash) ? 1 : 0;
+            $self->{ret} = $self->_parse_option(\@ARGV, $opthash);
+            return $self unless $self->{ret};
+            return $self if $self->_want_help;
             $self->_check_requires;
             return $self;
         }
@@ -229,7 +232,7 @@ sub _parse_command_struct {
 }
 
 sub _want_help {
-    $_[0]->{opt}{help} ? 1 : 0;
+    exists $_[0]->{opt}{help} && $_[0]->{opt}{help} ? 1 : 0;
 }
 
 sub _init_nested_struct {

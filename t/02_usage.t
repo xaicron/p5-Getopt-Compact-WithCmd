@@ -114,6 +114,40 @@ USAGE
 test_usage(
     args => {
         global_struct => [
+            [ [qw/f foo/], 'foo', '!', undef, { required => 1 } ],
+        ],
+    },
+    desc => 'with global_struct (foo is required)',
+    expects => << 'USAGE');
+`--foo` option must be specified
+usage: %FILE% [options]
+
+options:
+   -h, --help   This help message
+   -f, --foo    Foo              
+
+USAGE
+
+test_usage(
+    args => {
+        global_struct => [
+            [ [qw/f foo/], 'foo', '!', undef, { required => 1 } ],
+        ],
+    },
+    desc => 'with global_struct (foo is required) / set help',
+    argv => [qw/--help/],
+    expects => << 'USAGE');
+usage: %FILE% [options]
+
+options:
+   -h, --help   This help message
+   -f, --foo    Foo              
+
+USAGE
+
+test_usage(
+    args => {
+        global_struct => [
             [ [qw/f foo/], 'foo' ],
         ],
         command_struct => {

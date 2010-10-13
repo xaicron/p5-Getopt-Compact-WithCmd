@@ -179,6 +179,51 @@ test_new(
 
 test_new(
     args => {
+        global_struct => [
+            [ [qw/f foo/], 'foo' ],
+        ],
+    },
+    expects => {
+        struct => [
+            [ [qw/h help/], 'this help message' ],
+            [ [qw/f foo/], 'foo' ],
+        ],
+        opt => {
+            help => 1,
+            foo => undef,
+        },
+    },
+    argv => [qw/--help/],
+    expects_argv => [],
+    desc => 'with global_struct / show usage',
+);
+
+test_new(
+    args => {
+        global_struct => [
+            [ [qw/f foo/], 'foo', '!', undef, { required => 1 } ],
+        ],
+    },
+    expects => {
+        struct => [
+            [ [qw/h help/], 'this help message' ],
+            [ [qw/f foo/], 'foo', '!', undef, { required => 1 } ],
+        ],
+        opt => {
+            help => 1,
+            foo => undef,
+        },
+        requires => {
+            foo => 1,
+        },
+    },
+    argv => [qw/--help/],
+    expects_argv => [],
+    desc => 'with global_struct / show usage (required)',
+);
+
+test_new(
+    args => {
         usage => 0,
         global_struct => [
             [ [qw/f foo/], 'foo' ],
