@@ -1,5 +1,9 @@
 Revision history for Perl extension Getopt::Compact::WithCmd
 
+0.08  Thu Oct 14 01:14:15 2010
+      [Bug Fixed]
+        - Fixed usage message
+
 0.07  Thu Oct 14 00:30:52 2010
       [Bug Fixes]
         - Suppress error message if set help option
