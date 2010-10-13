@@ -172,6 +172,31 @@ USAGE
 test_usage(
     args => {
         global_struct => [
+            [ [qw/f foo/], 'foo', '!', undef, { required => 1 } ],
+        ],
+        command_struct => {
+            hoge => {},
+        },
+    },
+    argv => [qw/help/],
+    desc => 'with global_struct / command_struct (impl hoge) / help command',
+    expects => << 'USAGE');
+usage: %FILE% [options] COMMAND
+
+options:
+   -h, --help   This help message
+   -f, --foo    Foo              
+
+Implemented commands are:
+   hoge   
+
+See '%FILE% help COMMAND' for more information on a specific command.
+
+USAGE
+
+test_usage(
+    args => {
+        global_struct => [
             [ [qw/f foo/], 'foo' ],
         ],
         command_struct => {

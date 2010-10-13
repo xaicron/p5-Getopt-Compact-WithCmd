@@ -44,7 +44,7 @@ sub new {
                 return $self unless $self->{ret};
                 return $self if $self->_want_help;
             }
-            return $self unless $self->_check_requires;
+            $self->_check_requires;
         }
         else {
             $self->{ret} = $self->_parse_option(\@ARGV, $opthash);
@@ -70,20 +70,6 @@ sub opts {
     my($self) = @_;
     my $opt = $self->{opt};
     if ($self->{usage} && ($opt->{help} || $self->status == 0)) {
-        if (defined $self->command && $self->command eq 'help') {
-            delete $self->{command};
-            if (defined(my $target = shift @ARGV)) {
-                unless (ref $self->{_struct}{$target} eq 'HASH') {
-                    $self->{error} = "Unknown command: $target";
-                }
-                else {
-                    $self->{command} = $target;
-                    $self->_init_struct($self->{_struct}{$target}{options});
-                    $self->_extends_usage($self->{_struct}{$target});
-                }
-            }
-        }
-
         # display usage message & exit
         print $self->usage;
         exit !$self->status;
@@ -96,6 +82,20 @@ sub usage {
     my $usage = "";
     my(@help, @commands);
 
+    if (defined $self->command && $self->command eq 'help') {
+        delete $self->{command};
+        if (defined(my $target = $ARGV[0])) {
+            unless (ref $self->{_struct}{$target} eq 'HASH') {
+                $self->{error} = "Unknown command: $target";
+            }
+            else {
+                $self->{command} = $target;
+                $self->_init_struct($self->{_struct}{$target}{options});
+                $self->_extends_usage($self->{_struct}{$target});
+            }
+        }
+    }
+
     my($name, $version, $cmd, $struct, $args, $summary, $error, $other_usage) = map
         $self->{$_} || '', qw/name version cmd struct args summary error other_usage/;
 
@@ -107,7 +107,7 @@ sub usage {
         $usage .= "\n";
     }
 
-    if ($self->command) {
+    if ($self->command && $self->command ne 'help') {
         my $sub_command = join q{ }, @{$self->commands} ? @{$self->commands} : $self->command;
         $usage .= "usage: $cmd $sub_command [options]";
     }
@@ -193,6 +193,7 @@ sub _parse_command_struct {
 
     if ($command eq 'help' && @{$self->{commands} ||= []} == 0) {
         $self->{ret} = 0;
+        delete $self->{error};
         if (defined $ARGV[0] && exists $command_struct->{$ARGV[0]}) {
             my $nested_struct = $command_struct->{$ARGV[0]}{command_struct};
             $self->_init_nested_struct($nested_struct) if $nested_struct;
