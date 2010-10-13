@@ -482,6 +482,41 @@ test_new(
 
 test_new(
     args => {
+        usage => 0,
+        global_struct => [
+            [ [qw/f foo/], 'foo', '', '', { required => 1 } ],
+        ],
+        command_struct => {
+            foo => {},
+        },
+    },
+    expects => {
+        summary => {
+            foo => '',
+        },
+        struct => [
+            [ [qw/f foo/], 'foo', '', '', { required => 1 } ],
+        ],
+        opt => {
+            foo => undef,
+        },
+        requires => {
+            foo => 1,
+        },
+        _struct => {
+            foo => {},
+        },
+        error => '`--foo` option must be specified',
+        ret => 0,
+        usage => 0,
+    },
+    argv => [],
+    expects_argv => [],
+    desc => 'with global_struct (implemented: foo) / empty params',
+);
+
+test_new(
+    args => {
         command_struct => {
             foo => {},
         },

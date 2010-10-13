@@ -171,7 +171,7 @@ sub _parse_command_struct {
     my $command_map = { map { $_ => 1 } keys %$command_struct };
     my $command = shift @ARGV;
     unless ($command) {
-        $self->{ret} = 1;
+        $self->{ret} = $self->_check_requires;
         return $self;
     }
 
