@@ -134,7 +134,10 @@ sub usage {
         $usage .= Text::Table->new($sep, '', $sep, '')->load(@help)->stringify."\n";
     }
 
-    $usage .= "$other_usage\n\n" if defined $other_usage && length $other_usage > 0;
+    if (defined $other_usage && length $other_usage > 0) {
+        $other_usage =~ s/\n$//ms;
+        $usage .= "$other_usage\n\n";
+    }
 
     if (!$self->command || $self->{has_sub_command}) {
         for my $command (sort keys %$summary) {
