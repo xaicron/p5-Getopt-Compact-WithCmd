@@ -579,6 +579,12 @@ support nesting.
 
 =back
 
+=head2 new_from_array(\@myopts, %args);
+
+C<new_from_array> can be used to parse options from an arbitrary array.
+
+  $go = Getopt::Compact::With->new_from_array(\@myopts, ...);
+
 =head2 opts
 
 Returns a hashref of options keyed by option name.
@@ -620,12 +626,14 @@ Alias of C<status>
 Gets usage message.
 
   my $message = $go->usage;
+  my $message = $go->usage($target_command_name); # must be implemented command.
 
 =head2 show_usage
 
 Display usage message and exit.
 
   $go->show_usage;
+  $go->show_usage($target_command_name);
 
 =head2 pod2usage
 
