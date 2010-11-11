@@ -94,7 +94,7 @@ sub usage {
 
     if (defined $self->command && $self->command eq 'help') {
         delete $self->{command};
-        if (defined(my $target = $ARGV[0])) {
+        if (defined(my $target = $self->{_argv}[0])) {
             unless (ref $self->{_struct}{$target} eq 'HASH') {
                 $self->{error} = "Unknown command: $target";
             }
@@ -262,7 +262,9 @@ sub _parse_option {
         $self->{error} = join '', @_;
         chomp $self->{error};
     };
-    return GetOptionsFromArray($argv, %$opthash) ? 1 : 0;
+    my $ret = GetOptionsFromArray($argv, %$opthash) ? 1 : 0;
+    $self->{_argv} = \@ARGV;
+    return $ret;
 }
 
 sub _parse_argv {
