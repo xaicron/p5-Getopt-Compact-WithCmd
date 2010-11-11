@@ -88,13 +88,14 @@ sub opts {
 }
 
 sub usage {
-    my($self) = @_;
+    my($self, $command) = @_;
     my $usage = "";
     my(@help, @commands);
 
-    if (defined $self->command && $self->command eq 'help') {
+    if ((defined $self->command && $self->command eq 'help') || defined $command) {
         delete $self->{command};
-        if (defined(my $target = $self->{_argv}[0])) {
+        my $target;
+        if (defined($target = $self->{_argv}[0]) || defined($target = $command)) {
             unless (ref $self->{_struct}{$target} eq 'HASH') {
                 $self->{error} = "Unknown command: $target";
             }
@@ -172,8 +173,8 @@ sub usage {
 }
 
 sub show_usage {
-    my ($self) = @_;
-    print $self->usage;
+    my $self = shift;
+    print $self->usage(@_);
     exit !$self->status;
 }
 

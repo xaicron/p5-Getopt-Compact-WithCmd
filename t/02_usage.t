@@ -7,8 +7,8 @@ use Getopt::Compact::WithCmd;
 
 sub test_usage {
     my %specs = @_;
-    my ($args, $expects, $desc, $extra_test, $argv)
-        = @specs{qw/args expects desc extra_test argv/};
+    my ($args, $expects, $command, $desc, $extra_test, $argv)
+        = @specs{qw/args expects command desc extra_test argv/};
 
     $expects =~ s/%FILE%/basename($0)/gmse;
 
@@ -16,7 +16,7 @@ sub test_usage {
         @::ARGV = @$argv if $argv;
         my $go = new_ok 'Getopt::Compact::WithCmd', [%$args];
 
-        my @got     = split "\n", +$go->usage;
+        my @got     = split "\n", +$go->usage($command);
         my @expects = split "\n", $expects;
         is_deeply \@got, \@expects, 'usage';
 
@@ -231,6 +231,26 @@ test_usage(
     },
     argv => [qw/hoge/],
     desc => 'with global_struct / command_struct (impl hoge) / command mode',
+    expects => << 'USAGE');
+usage: %FILE% hoge [options]
+
+options:
+   -h, --help   This help message
+
+USAGE
+
+test_usage(
+    args    => {
+        global_struct => [
+            [ [qw/f foo/], 'foo' ],
+        ],
+        command_struct => {
+            hoge => {},
+        },
+    },
+    argv    => [],
+    command => 'hoge',
+    desc    => 'with global_struct / command_struct (impl hoge) / args hoge',
     expects => << 'USAGE');
 usage: %FILE% hoge [options]
 
