@@ -35,7 +35,7 @@ sub test_new {
     };
 
     subtest $desc => sub {
-        my $go = Getopt::Compact::WithCmd->new_from_args($argv, %$args);
+        my $go = Getopt::Compact::WithCmd->new_from_array($argv, %$args);
 
         for my $key (qw/
             cmd name version modes opt usage args struct summary
