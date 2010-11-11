@@ -60,6 +60,16 @@ sub new {
     return $self;
 }
 
+sub new_from_args {
+    my ($class, $args, %options) = @_;
+    unless (ref $args eq 'ARRAY') {
+        require Carp;
+        Carp::croak("Usage: $class->new_from_args(\\\@args, %options)");
+    }
+    local @ARGV = @$args;
+    return $class->new(%options);
+}
+
 sub command    { $_[0]->{command}  }
 sub commands   { $_[0]->{commands} }
 sub status     { $_[0]->{ret}      }
