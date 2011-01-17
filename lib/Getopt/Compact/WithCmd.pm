@@ -89,21 +89,32 @@ sub opts {
 }
 
 sub usage {
-    my($self, $command) = @_;
+    my($self, @targets) = @_;
     my $usage = "";
     my(@help, @commands);
 
-    if ((defined $self->command && $self->command eq 'help') || defined $command) {
+    if ((defined $self->command && $self->command eq 'help') || @targets) {
         delete $self->{command};
-        my $target;
-        if (defined($target = $self->{_argv}[0]) || defined($target = $command)) {
+        @targets = @{$self->{_argv}} unless @targets;
+        for (my $i = 0; $i < @targets; $i++) {
+            my $target = $targets[$i];
+            last unless defined $target;
             unless (ref $self->{_struct}{$target} eq 'HASH') {
                 $self->{error} = "Unknown command: $target";
+                last;
             }
             else {
                 $self->{command} = $target;
+                push @{$self->{commands}}, $target;
                 $self->_init_struct($self->{_struct}{$target}{options});
                 $self->_extends_usage($self->{_struct}{$target});
+
+                if (ref $self->{_struct}{$target}{command_struct} eq 'HASH') {
+                    $self->{_struct} = $self->{_struct}{$target}{command_struct};
+                }
+                else {
+                    $self->{summary} = {};
+                }
             }
         }
     }

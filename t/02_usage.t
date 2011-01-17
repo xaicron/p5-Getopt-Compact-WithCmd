@@ -12,11 +12,14 @@ sub test_usage {
 
     $expects =~ s/%FILE%/basename($0)/gmse;
 
+    $command ||= [];
+    $command = [ $command ] unless ref $command eq 'ARRAY';
+
     subtest $desc => sub {
-        @::ARGV = @$argv if $argv;
+        local @::ARGV = @$argv if $argv;
         my $go = new_ok 'Getopt::Compact::WithCmd', [%$args];
 
-        my @got     = split "\n", +$go->usage($command);
+        my @got     = split "\n", +$go->usage(@$command);
         my @expects = split "\n", $expects;
         is_deeply \@got, \@expects, 'usage';
 
@@ -512,6 +515,112 @@ test_usage(
     },
     argv => [qw/hoge fuga/],
     desc => 'with global_struct / command_struct (impl hoge -> fuga) / @ARGV = hoge, fuga',
+    expects => << 'USAGE');
+usage: %FILE% hoge fuga [options] piyo
+
+options:
+   -h, --help   This help message
+   -b, --bar    Bar              
+
+blah blah blah
+
+USAGE
+
+test_usage(
+    args => {
+        global_struct => [
+            [ [qw/f foo/], 'foo' ],
+        ],
+        command_struct => {
+            hoge => {
+                desc => 'hoge',
+                command_struct => {
+                    fuga => {
+                        options => [
+                            [ [qw/b bar/], 'bar' ],
+                        ],
+                        desc => 'fuga',
+                        args => 'piyo',
+                        other_usage => 'blah blah blah',
+                    },
+                },
+            },
+        },
+    },
+    argv => [qw/help hoge/],
+    desc => 'with global_struct / command_struct (impl hoge -> fuga) / @ARGV = help, hoge, fuga',
+    expects => << 'USAGE');
+usage: %FILE% hoge [options]
+
+options:
+   -h, --help   This help message
+
+Implemented commands are:
+   fuga   Fuga
+
+See '%FILE% hoge COMMAND --help' for more information on a specific command.
+
+
+USAGE
+
+test_usage(
+    args => {
+        global_struct => [
+            [ [qw/f foo/], 'foo' ],
+        ],
+        command_struct => {
+            hoge => {
+                desc => 'hoge',
+                command_struct => {
+                    fuga => {
+                        options => [
+                            [ [qw/b bar/], 'bar' ],
+                        ],
+                        desc => 'fuga',
+                        args => 'piyo',
+                        other_usage => 'blah blah blah',
+                    },
+                },
+            },
+        },
+    },
+    argv => [qw/help hoge fuga/],
+    desc => 'with global_struct / command_struct (impl hoge -> fuga) / @ARGV = help, hoge, fuga',
+    expects => << 'USAGE');
+usage: %FILE% hoge fuga [options] piyo
+
+options:
+   -h, --help   This help message
+   -b, --bar    Bar              
+
+blah blah blah
+
+USAGE
+
+test_usage(
+    args => {
+        global_struct => [
+            [ [qw/f foo/], 'foo' ],
+        ],
+        command_struct => {
+            hoge => {
+                desc => 'hoge',
+                command_struct => {
+                    fuga => {
+                        options => [
+                            [ [qw/b bar/], 'bar' ],
+                        ],
+                        desc => 'fuga',
+                        args => 'piyo',
+                        other_usage => 'blah blah blah',
+                    },
+                },
+            },
+        },
+    },
+    run_ok  => 1,
+    command => [qw/hoge fuga/],
+    desc    => 'with global_struct / command_struct (impl hoge -> fuga) / command = hoge, fuga',
     expects => << 'USAGE');
 usage: %FILE% hoge fuga [options] piyo
 
