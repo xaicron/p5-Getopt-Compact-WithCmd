@@ -18,6 +18,7 @@ sub new {
         opt         => {},
         usage       => exists $args{usage} && !$args{usage} ? 0 : 1,
         args        => $args{args} || '',
+        _argv       => \@ARGV,
         struct      => [],
         summary     => {},
         requires    => {},
@@ -264,7 +265,6 @@ sub _parse_option {
         chomp $self->{error};
     };
     my $ret = GetOptionsFromArray($argv, %$opthash) ? 1 : 0;
-    $self->{_argv} = \@ARGV;
     return $ret;
 }
 
