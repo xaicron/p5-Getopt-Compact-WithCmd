@@ -1,5 +1,9 @@
 Revision history for Perl extension Getopt::Compact::WithCmd
 
+0.12  Tue Jan 18 01:46:55 2011
+      [Bug Fixed]
+        - Fixed help command problem (reported by bayashi++)
+
 0.11  Sun Nov 21 16:10:32 2010
       [New Features]
         - Implemented new_from_array() (idea from gfx)
