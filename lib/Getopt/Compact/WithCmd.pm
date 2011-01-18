@@ -620,6 +620,29 @@ Gets sub-command name.
   $ ./foo.pl bar
   bar
 
+=head2 commands
+
+Get sub commands. Returned value is ARRAYREF.
+
+  # inside foo.pl
+  use Getopt::Compact::WithCmd;
+  
+  my $go = Getopt::Compact::WithCmd->new(
+     command_struct => {
+        bar => {
+            command_struct => {
+                baz => {},
+            },
+        },
+     },
+  );
+  
+  print join(", ", @{$go->commands}), "\n";
+  
+  # running the command
+  $ ./foo.pl bar baz
+  bar, baz
+
 =head2 status
 
 This is a true value if the command line was processed successfully. Otherwise it returns a false result.
