@@ -1,5 +1,10 @@
 Revision history for Perl extension Getopt::Compact::WithCmd
 
+0.13  Sat Jan 22 20:28:32 2011
+      [New Features]
+        - first help command became can be given more than one args
+        - wrote commands() into document
+
 0.12  Tue Jan 18 01:46:55 2011
       [Bug Fixed]
         - Fixed help command problem (reported by bayashi++)
