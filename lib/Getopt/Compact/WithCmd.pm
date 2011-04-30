@@ -142,7 +142,7 @@ sub usage {
 
     for my $o (@$struct) {
         my($opts, $desc) = @$o;
-        next unless defined $desc;
+        $desc = '' unless defined $desc;
         my @onames = $self->_option_names($opts);
         my $optname = join
             (', ', map { (length($_) > 1 ? '--' : '-').$_ } @onames);
