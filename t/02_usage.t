@@ -15,6 +15,8 @@ sub test_usage {
     $command ||= [];
     $command = [ $command ] unless ref $command eq 'ARRAY';
 
+    local $Test::Builder::Level = $Test::Builder::Level + 1;
+
     subtest $desc => sub {
         local @::ARGV = @$argv if $argv;
         my $go = new_ok 'Getopt::Compact::WithCmd', [%$args];
@@ -93,8 +95,8 @@ test_usage(
 usage: %FILE% [options]
 
 options:
-   -h, --help   This help message
-   -f, --foo    Foo              
+   -h, --help      This help message
+   -f, --foo       Foo              
 
 USAGE
 
@@ -110,7 +112,7 @@ test_usage(
 usage: %FILE% [options]
 
 options:
-   -f, --foo   Foo
+   -f, --foo      Foo
 
 USAGE
 
@@ -126,8 +128,8 @@ test_usage(
 usage: %FILE% [options]
 
 options:
-   -h, --help   This help message
-   -f, --foo    Foo              
+   -h, --help                     This help message
+   -f, --foo    Bool (required)   Foo              
 
 USAGE
 
@@ -143,8 +145,8 @@ test_usage(
 usage: %FILE% [options]
 
 options:
-   -h, --help   This help message
-   -f, --foo    Foo              
+   -h, --help                     This help message
+   -f, --foo    Bool (required)   Foo              
 
 USAGE
 
@@ -162,8 +164,8 @@ test_usage(
 usage: %FILE% [options] COMMAND
 
 options:
-   -h, --help   This help message
-   -f, --foo    Foo              
+   -h, --help      This help message
+   -f, --foo       Foo              
 
 Implemented commands are:
    hoge   
@@ -187,8 +189,8 @@ test_usage(
 usage: %FILE% [options] COMMAND
 
 options:
-   -h, --help   This help message
-   -f, --foo    Foo              
+   -h, --help                     This help message
+   -f, --foo    Bool (required)   Foo              
 
 Implemented commands are:
    hoge   
@@ -211,8 +213,8 @@ test_usage(
 usage: %FILE% [options] COMMAND
 
 options:
-   -h, --help   This help message
-   -f, --foo    Foo              
+   -h, --help                     This help message
+   -f, --foo    Bool (required)   Foo              
 
 Implemented commands are:
    hoge   
@@ -238,7 +240,7 @@ test_usage(
 usage: %FILE% hoge [options]
 
 options:
-   -h, --help   This help message
+   -h, --help      This help message
 
 USAGE
 
@@ -257,7 +259,7 @@ test_usage(
 usage: %FILE% hoge [options]
 
 options:
-   -h, --help   This help message
+   -h, --help      This help message
 
 USAGE
 
@@ -277,7 +279,7 @@ test_usage(
 usage: %FILE% hoge [options]
 
 options:
-   -h, --help   This help message
+   -h, --help      This help message
 
 USAGE
 
@@ -298,7 +300,7 @@ test_usage(
 usage: %FILE% hoge [options] FILE
 
 options:
-   -h, --help   This help message
+   -h, --help      This help message
 
 USAGE
 
@@ -322,8 +324,8 @@ test_usage(
 usage: %FILE% hoge [options] FILE
 
 options:
-   -h, --help     This help message
-   -o, --output   Output           
+   -h, --help        This help message
+   -o, --output      Output           
 
 USAGE
 
@@ -348,8 +350,8 @@ test_usage(
 usage: %FILE% hoge [options] FILE
 
 options:
-   -h, --help     This help message
-   -o, --output   Output           
+   -h, --help        This help message
+   -o, --output      Output           
 
 blah blah blah
 
@@ -373,8 +375,8 @@ Unknown command: fuga
 usage: %FILE% [options] COMMAND
 
 options:
-   -h, --help   This help message
-   -f, --foo    Foo              
+   -h, --help      This help message
+   -f, --foo       Foo              
 
 Implemented commands are:
    hoge   Hoge
@@ -401,8 +403,8 @@ Unknown option: hoge
 usage: %FILE% [options] COMMAND
 
 options:
-   -h, --help   This help message
-   -f, --foo    Foo              
+   -h, --help      This help message
+   -f, --foo       Foo              
 
 Implemented commands are:
    hoge   Hoge
@@ -432,8 +434,8 @@ Unknown option: hoge
 usage: %FILE% hoge [options]
 
 options:
-   -h, --help   This help message
-   -b, --bar    Bar              
+   -h, --help      This help message
+   -b, --bar       Bar              
 
 USAGE
 
@@ -450,8 +452,8 @@ Invalid default option for foo
 usage: %FILE% [options]
 
 options:
-   -h, --help   This help message
-   -f, --foo    Foo              
+   -h, --help                                This help message
+   -f, --foo    (default: sub { "DUMMY" })   Foo              
 
 USAGE
 
@@ -481,7 +483,7 @@ test_usage(
 usage: %FILE% hoge [options]
 
 options:
-   -h, --help   This help message
+   -h, --help      This help message
 
 blah blah blah
 
@@ -519,8 +521,8 @@ test_usage(
 usage: %FILE% hoge fuga [options] piyo
 
 options:
-   -h, --help   This help message
-   -b, --bar    Bar              
+   -h, --help      This help message
+   -b, --bar       Bar              
 
 blah blah blah
 
@@ -553,7 +555,7 @@ test_usage(
 usage: %FILE% hoge [options]
 
 options:
-   -h, --help   This help message
+   -h, --help      This help message
 
 Implemented commands are:
    fuga   Fuga
@@ -590,8 +592,8 @@ test_usage(
 usage: %FILE% hoge fuga [options] piyo
 
 options:
-   -h, --help   This help message
-   -b, --bar    Bar              
+   -h, --help      This help message
+   -b, --bar       Bar              
 
 blah blah blah
 
@@ -625,8 +627,8 @@ test_usage(
 usage: %FILE% hoge fuga [options] piyo
 
 options:
-   -h, --help   This help message
-   -b, --bar    Bar              
+   -h, --help      This help message
+   -b, --bar       Bar              
 
 blah blah blah
 

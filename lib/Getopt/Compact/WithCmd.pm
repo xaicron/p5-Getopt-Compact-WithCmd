@@ -3,6 +3,7 @@ package Getopt::Compact::WithCmd;
 use strict;
 use warnings;
 use 5.008_001;
+use Data::Dumper ();
 use Getopt::Long qw/GetOptionsFromArray/;
 use constant DEFAULT_CONFIG => (no_auto_abbrev => 1, bundling => 1);
 
@@ -141,20 +142,29 @@ sub usage {
     $usage .= ($args ? " $args" : '') . "\n\n";
 
     for my $o (@$struct) {
-        my($opts, $desc) = @$o;
+        my ($name_spec, $desc, $arg_spec, $dist, $opts) = @$o;
         $desc = '' unless defined $desc;
-        my @onames = $self->_option_names($opts);
+        my @onames = $self->_option_names($name_spec);
         my $optname = join
             (', ', map { (length($_) > 1 ? '--' : '-').$_ } @onames);
         $optname = '    '.$optname unless length($onames[0]) == 1;
-        push @help, [ $optname, ucfirst($desc) ];
+        my $info = do {
+            local $Data::Dumper::Indent = 0;
+            local $Data::Dumper::Terse  = 1;
+            my $info = [];
+            push @$info, $self->_opt_spec2name($arg_spec) if $arg_spec;
+            push @$info, "(required)" if $opts->{required};
+            push @$info, "(default: ".Data::Dumper::Dumper($opts->{default}).")" if defined $opts->{default};
+            join ' ', @$info;
+        } || '';
+        push @help, [ $optname, $info, ucfirst($desc) ];
     }
 
     if (@help) {
         require Text::Table;
         my $sep = \'   ';
         $usage .= "options:\n";
-        $usage .= Text::Table->new($sep, '', $sep, '')->load(@help)->stringify."\n";
+        $usage .= Text::Table->new($sep, '', $sep, '', $sep, '')->load(@help)->stringify."\n";
     }
 
     if (defined $other_usage && length $other_usage > 0) {
@@ -188,6 +198,25 @@ sub show_usage {
     my $self = shift;
     print $self->usage(@_);
     exit !$self->status;
+}
+
+sub _opt_spec2name {
+    my ($self, $spec) = @_;
+    my $name = '';
+    my ($type, $dest) = $spec =~ /^[=:]?([!+isof])([@%])?/;
+    if ($type) {
+        $name =
+            $type eq '!' ? 'Bool'   :
+            $type eq '+' ? 'Incr'   :
+            $type eq 's' ? 'Str'    :
+            $type eq 'i' ? 'Int'    :
+            $type eq 'o' ? 'ExtInt' :
+            $type eq 'f' ? 'Number' : '';
+    }
+    if ($dest) {
+        $name .= $dest eq '@' ? ':Array' : $dest eq '%' ? ':Hash' : '';
+    }
+    return $name;
 }
 
 sub _parse_command_struct {
