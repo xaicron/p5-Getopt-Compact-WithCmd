@@ -90,7 +90,7 @@ sub opts {
 
 sub usage {
     my($self, @targets) = @_;
-    my $usage = "";
+    my $usage = '';
     my(@help, @commands);
 
     if ((defined $self->command && $self->command eq 'help') || @targets) {
@@ -146,7 +146,7 @@ sub usage {
         my @onames = $self->_option_names($opts);
         my $optname = join
             (', ', map { (length($_) > 1 ? '--' : '-').$_ } @onames);
-        $optname = "    ".$optname unless length($onames[0]) == 1;
+        $optname = '    '.$optname unless length($onames[0]) == 1;
         push @help, [ $optname, ucfirst($desc) ];
     }
 
