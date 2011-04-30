@@ -4,6 +4,7 @@ use strict;
 use warnings;
 use 5.008_001;
 use Data::Dumper ();
+use List::Util qw(max);
 use Getopt::Long qw/GetOptionsFromArray/;
 use constant DEFAULT_CONFIG => (no_auto_abbrev => 1, bundling => 1);
 
@@ -152,11 +153,11 @@ sub usage {
             local $Data::Dumper::Indent = 0;
             local $Data::Dumper::Terse  = 1;
             my $info = [];
-            push @$info, $self->_opt_spec2name($arg_spec) if $arg_spec;
-            push @$info, "(required)" if $opts->{required};
-            push @$info, "(default: ".Data::Dumper::Dumper($opts->{default}).")" if defined $opts->{default};
-            join ' ', @$info;
-        } || '';
+            push @$info, $arg_spec                ? $self->_opt_spec2name($arg_spec): '';
+            push @$info, $opts->{required}        ? "(required)" : '';
+            push @$info, defined $opts->{default} ? "(default: ".Data::Dumper::Dumper($opts->{default}).")" : '';
+            $info;
+        };
         push @help, [ $optname, $info, ucfirst($desc) ];
     }
 
@@ -164,7 +165,7 @@ sub usage {
         require Text::Table;
         my $sep = \'   ';
         $usage .= "options:\n";
-        $usage .= Text::Table->new($sep, '', $sep, '', $sep, '')->load(@help)->stringify."\n";
+        $usage .= Text::Table->new($sep, '', $sep, '', $sep, '')->load($self->_format_info(@help))->stringify."\n";
     }
 
     if (defined $other_usage && length $other_usage > 0) {
@@ -217,6 +218,31 @@ sub _opt_spec2name {
         $name .= $dest eq '@' ? ':Array' : $dest eq '%' ? ':Hash' : '';
     }
     return $name;
+}
+
+sub _format_info {
+    my ($self, @help) = @_;
+
+    my $type_max     = 0;
+    my $required_max = 0;
+    my $default_max  = 0;
+    for my $row (@help) {
+        my ($type, $required, $default) = @{$row->[1]};
+        $type_max     = max $type_max, length($type);
+        $required_max = max $required_max, length($required);
+        $default_max  = max $default_max, length($default);
+    }
+
+    for my $row (@help) {
+        my ($type, $required, $default) = @{$row->[1]};
+        my $parts = [];
+        for my $stuff ([$type_max, $type], [$required_max, $required], [$default_max, $default]) {
+            push @$parts, sprintf '%-*s', @$stuff if $stuff->[0] > 0;
+        }
+        $row->[1] = join ' ', @$parts;
+    }
+
+    return @help;
 }
 
 sub _parse_command_struct {
