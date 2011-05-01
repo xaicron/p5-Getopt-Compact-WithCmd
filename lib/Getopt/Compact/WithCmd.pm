@@ -539,28 +539,28 @@ usage, running the command './foo.pl -x' results in the following output:
   $ ./foo.pl -x
   Unknown option: x
   foo v0.1
-  usage: hoge.pl [options] COMMAND FILE
+  usage: foo.pl [options] COMMAND FILE
   
   options:
-     -h, --help    This help message
-     -f, --force   Force overwrite
+     -h, --help           This help message
+     -f, --force   Bool   Force overwrite
   
   Implemented commands are:
      get   Get file from url
   
-  See 'hoge.pl help COMMAND' for more information on a specific command.
+  See 'foo.pl help COMMAND' for more information on a specific command.
 
 in addition, running the command './foo.pl get' results in the following output:
 
   $ ./foo.pl get
   `--output` option must be specified
   foo v0.1
-  usage: hoge.pl COMMAND [options] url
+  usage: foo.pl get [options] url
   
   options:
-     -h, --help     This help message
-     -d, --dir      Dest dir
-     -o, --output   Output file name
+     -h, --help                                     This help message
+     -d, --dir      Str            (default: '.')   Dest dir
+     -o, --output   Str (required)                  Output file name
   
   blah blah blah
 
