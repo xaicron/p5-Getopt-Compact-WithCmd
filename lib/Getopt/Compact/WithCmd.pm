@@ -401,7 +401,7 @@ sub _parse_struct {
 
 sub _init_struct {
     my ($self, $struct) = @_;
-    $self->{struct} = ref $struct eq 'ARRAY' ? $struct : [];
+    $self->{struct} = ref $struct eq 'ARRAY' ? $struct : ref $struct eq 'HASH' ? $self->_normalize_struct($struct) : [];
 
     if (ref $self->{modes} eq 'ARRAY') {
         my @modeopt;
@@ -415,6 +415,25 @@ sub _init_struct {
 
     unshift @{$self->{struct}}, [[qw(h help)], qq(this help message)]
         if $self->{usage} && !$self->_has_option('help');
+}
+
+sub _normalize_struct {
+    my ($self, $struct) = @_;
+
+    my $result = [];
+    for my $option (keys %$struct) {
+        my $data = $struct->{$option} || {};
+        $data = ref $data eq 'HASH' ? $data : {};
+        my $row = [];
+        push @$row, [$option, ref $data->{alias} ? @{$data->{alias}} : ()];
+        push @$row, $data->{desc};
+        push @$row, $data->{type};
+        push @$row, $data->{dest};
+        push @$row, $data->{opts};
+        push @$result, $row;
+    }
+
+    return $result;
 }
 
 sub _init_summary {

@@ -311,4 +311,51 @@ test_opts(
     desc => 'with global_struct (foo) / command_struct (bar) / ARGV=help hoge',
 );
 
+test_opts(
+    args => {
+        global_struct => {
+            foo => {
+                alias => [qw/f/],
+                type  => '!',
+            },
+        },
+    },
+    argv => [],
+    is_alive => 1,
+    expects => {
+        help => undef,
+        foo  => undef,
+    },
+    desc => 'HASH element',
+);
+
+test_opts(
+    args => {
+        global_struct => {
+            foo => {
+                alias => [qw/f/],
+                type  => '!',
+            },
+        },
+        command_struct => {
+            hoge => {
+                options => {
+                    bar => {
+                        alias => [qw/b/],
+                        type  => '!',
+                    },
+                },
+            },
+        },
+    },
+    argv => [qw/hoge --bar/],
+    is_alive => 1,
+    expects => {
+        help => undef,
+        foo  => undef,
+        bar  => 1,
+    },
+    desc => 'HASH element / with command_struct',
+);
+
 done_testing;
