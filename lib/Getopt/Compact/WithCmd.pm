@@ -509,7 +509,7 @@ inside foo.pl:
      ],
      command_struct => {
         get => {
-            options    => [
+            options     => [
                 [ [qw/d dir/], 'dest dir', '=s', undef, { default => '.' } ],
                 [ [qw/o output/], 'output file name', '=s', undef, { required => 1 }],
             ],
@@ -592,9 +592,27 @@ In addition, extended to other values can be set.
   use Getopt::Compact::WithCmd;
   my $go = Getopt::Compact::WithCmd->new(
       global_struct => [
-          [ $name_spec_arrayref, $description_scalar, $argument_spec_scalar, \$destination_scalar, $opt_hashref],
+          [ $name_spec_arrayref, $description_scalar, $argument_spec_scalar, \$destination_scalar, $opt_hashref ],
           [ ... ]
       ],
+  );
+
+And you can also write in hash style.
+
+  use Getopt::Compact::WithCmd;
+  my $go = Getopt::Compact::WithCmd->new(
+      global_struct => {
+          $name_scalar => {
+              alias => $name_spec_arrayref,
+              desc  => $description_scalar,
+              type  => $argument_spec_scalar,
+              dest  => \$destination_scalar,
+              opts  => $opt_hashref,
+          },
+          $other_name_scalar => {
+              ...
+          },
+      },
   );
 
 I<$opt_hasref> are:
