@@ -8,7 +8,7 @@ use List::Util qw(max);
 use Getopt::Long qw/GetOptionsFromArray/;
 use constant DEFAULT_CONFIG => (no_auto_abbrev => 1, bundling => 1);
 
-our $VERSION = '0.14';
+our $VERSION = '0.15';
 
 sub new {
     my ($class, %args) = @_;
