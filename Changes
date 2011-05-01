@@ -1,5 +1,10 @@
 Revision history for Perl extension Getopt::Compact::WithCmd
 
+0.14  Sun May  1 21:10:22 2011
+      [New Features]
+        - Supported hash style options
+        - added column option type, required and default value for usage
+
 0.13  Sat Jan 22 20:28:32 2011
       [New Features]
         - first help command became can be given more than one args
