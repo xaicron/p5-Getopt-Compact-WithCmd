@@ -331,6 +331,9 @@ sub _parse_option {
         chomp $self->{error};
     };
     my $ret = GetOptionsFromArray($argv, %$opthash) ? 1 : 0;
+
+    $self->{parsed_opthash} = $opthash;
+
     return $ret;
 }
 
@@ -387,7 +390,7 @@ sub _parse_struct {
             $default_opthash->{$o} = ref $ref ? $ref : \$self->{opt}{$dest};
         }
         $opthash->{$o} = ref $ref ? $ref : \$self->{opt}{$dest};
-        $self->{requires}{$dest} = 1 if $opts->{required};
+        $self->{requires}{$dest} = $o if $opts->{required};
     }
 
     return if $self->{error};
@@ -459,9 +462,11 @@ sub _check_requires {
     my ($self) = @_;
     for my $dest (sort keys %{$self->{requires}}) {
         unless (defined $self->{opt}{$dest}) {
-            $self->{ret}   = 0;
-            $self->{error} = "`--$dest` option must be specified";
-            return 0;
+            unless (defined ${$self->{parsed_opthash}{$self->{requires}{$dest}}}) {
+                $self->{ret}   = 0;
+                $self->{error} = "`--$dest` option must be specified";
+                return 0;
+            }
         }
     }
     return 1;

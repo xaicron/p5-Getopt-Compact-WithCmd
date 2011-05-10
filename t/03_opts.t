@@ -117,6 +117,26 @@ test_opts(
     );
 }
 
+{
+    my $foo;
+    test_opts(
+        args => {
+            global_struct => [
+                [ [qw/f foo/], 'foo', '!', \$foo ],
+            ],
+        },
+        expects => {
+            help => undef,
+        },
+        is_alive => 1,
+        argv => [qw/--foo/],
+        extra_test => sub {
+            is $foo, 1, 'dest foo';
+        },
+        desc => 'with global_struct (dest foo)',
+    );
+}
+
 test_opts(
     args => {
         global_struct => [

@@ -319,7 +319,7 @@ test_parse_struct(
             bar => 1,
         },
         requires => {
-            foo => 1,
+            foo => 'f|foo=s',
         },
     },
     desc => 'with required',

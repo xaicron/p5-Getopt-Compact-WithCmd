@@ -214,7 +214,7 @@ test_new(
             foo => undef,
         },
         requires => {
-            foo => 1,
+            foo => 'f|foo!',
         },
     },
     argv => [qw/--help/],
@@ -351,7 +351,7 @@ test_new(
             [ [qw/f foo/], 'foo', '=s', undef, { required => 1 } ],
         ],
         requires => {
-            foo => 1,
+            foo => 'f|foo=s',
         },
         opt => {
             foo => undef,
@@ -377,7 +377,7 @@ test_new(
             [ [qw/f foo/], 'foo', '=s', undef, { required => 1 } ],
         ],
         requires => {
-            foo => 1,
+            foo => 'f|foo=s',
         },
         opt => {
             foo => 'bar',
@@ -401,7 +401,7 @@ test_new(
             [ [qw/f foo/], 'foo', '=s', undef, { required => 1 } ],
         ],
         requires => {
-            foo => 1,
+            foo => 'f|foo=s',
         },
         opt => {
             foo => 'bar',
@@ -501,7 +501,7 @@ test_new(
             foo => undef,
         },
         requires => {
-            foo => 1,
+            foo => 'f|foo',
         },
         _struct => {
             foo => {},
@@ -1000,7 +1000,7 @@ test_new(
             help => undef,
         },
         requires => {
-            foo => 1,
+            foo => 'f|foo=s',
         },
         ret => 0,
         error => '`--foo` option must be specified',
@@ -1053,7 +1053,7 @@ test_new(
             help => undef,
         },
         requires => {
-            foo => 1,
+            foo => 'f|foo=s',
         },
     },
     argv => [qw/foo --foo bar/],
@@ -1103,7 +1103,7 @@ test_new(
             foo  => 'bar',
         },
         requires => {
-            foo => 1,
+            foo => 'f|foo=s',
         },
     },
     argv => [qw/foo --foo bar/],
@@ -1153,7 +1153,7 @@ test_new(
             foo  => 'bar',
         },
         requires => {
-            foo => 1,
+            foo => 'f|foo=s',
         },
     },
     argv => [qw/foo --foo bar baz/],
@@ -1228,7 +1228,7 @@ test_new(
             fuga => 1,
         },
         requires => {
-            foo => 1,
+            foo => 'f|foo=s',
         },
     },
     argv => [qw/foo --foo=foo bar baz --fuga/],

@@ -150,6 +150,44 @@ options:
 
 USAGE
 
+{
+    test_usage(
+        args => {
+            global_struct => [
+                [ [qw/f foo/], 'foo', '!', \my $foo, { required => 1 } ],
+            ],
+        },
+        desc => 'with global_struct (foo is required and dest)',
+        expects => << 'USAGE');
+`--foo` option must be specified
+usage: %FILE% [options]
+
+options:
+   -h, --help                     This help message
+   -f, --foo    Bool (required)   Foo              
+
+USAGE
+}
+
+{
+    test_usage(
+        args => {
+            global_struct => [
+                [ [qw/f foo/], 'foo', '!', \my $foo, { required => 1 } ],
+            ],
+        },
+        desc => 'with global_struct (foo is required and set dest)',
+        argv => [qw/--foo/],
+        expects => << 'USAGE');
+usage: %FILE% [options]
+
+options:
+   -h, --help                     This help message
+   -f, --foo    Bool (required)   Foo              
+
+USAGE
+}
+
 test_usage(
     args => {
         global_struct => [
