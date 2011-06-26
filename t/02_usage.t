@@ -39,6 +39,9 @@ test_usage(
     expects => << 'USAGE');
 usage: %FILE% [options]
 
+options:
+   -h, --help      This help message
+
 USAGE
 
 test_usage(
@@ -49,6 +52,9 @@ test_usage(
     expects => << 'USAGE');
 usage: %FILE% [options] ARGS
 
+options:
+   -h, --help      This help message
+
 USAGE
 
 test_usage(
@@ -58,6 +64,9 @@ test_usage(
     desc => 'with cmd',
     expects => << 'USAGE');
 usage: foo [options]
+
+options:
+   -h, --help      This help message
 
 USAGE
 
@@ -70,6 +79,9 @@ test_usage(
 foo
 usage: %FILE% [options]
 
+options:
+   -h, --help      This help message
+
 USAGE
 
 test_usage(
@@ -81,6 +93,9 @@ test_usage(
     expects => << 'USAGE');
 foo v1.0
 usage: %FILE% [options]
+
+options:
+   -h, --help      This help message
 
 USAGE
 

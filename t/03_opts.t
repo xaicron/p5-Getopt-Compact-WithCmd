@@ -35,7 +35,9 @@ sub test_opts {
 
 test_opts(
     args => {},
-    expects => {},
+    expects => {
+        help => undef,
+    },
     is_alive => 1,
     desc => 'empty params',
 );

@@ -11,10 +11,12 @@ sub default_expects {
         name        => undef,
         version     => $::VERSION,
         modes       => undef,
-        opt         => {},
+        opt         => { help => undef },
         usage       => 1,
         args        => '',
-        struct      => [],
+        struct      => [
+            [ [qw/h help/], 'this help message' ],
+        ],
         summary     => {},
         requires    => {},
         ret         => 1,
@@ -34,6 +36,7 @@ sub test_new {
         %$expects,
     };
 
+    local $Test::Builder::Level = $Test::Builder::Level + 1;
     subtest $desc => sub {
         my $go = Getopt::Compact::WithCmd->new_from_array($argv, %$args);
 
@@ -98,6 +101,16 @@ test_new(
     },
     expects => {
         modes => [qw/test foo/],
+        opt => {
+            help => undef,
+            test => undef,
+            foo  => undef,
+        },
+        struct => [
+            [ [qw/h help/], 'this help message' ],
+            [ [qw/t test/], 'test mode' ],
+            [ [qw/f foo/], 'foo mode' ],
+        ],
     },
     argv => [],
     desc => 'with modes',
@@ -109,6 +122,8 @@ test_new(
     },
     expects => {
         usage => 0,
+        opt => {},
+        struct => [],
     },
     argv => [],
     desc => 'with usage',
@@ -264,6 +279,7 @@ test_new(
             struct => [
                 [ [qw/f foo/], 'foo', '=s', \$foo ],
             ],
+            opt => {},
         },
         argv => [],
         desc => 'with global_struct / spec, dest',
@@ -284,6 +300,7 @@ test_new(
             struct => [
                 [ [qw/f foo/], 'foo', '=s', \$foo, { default => 'bar' } ],
             ],
+            opt => {},
         },
         argv => [],
         extra_test => sub {
@@ -291,7 +308,6 @@ test_new(
         },
         desc => 'with global_struct / spec, dest, default',
     );
-
 };
 
 {
@@ -309,6 +325,7 @@ test_new(
             struct => [
                 [ [qw/f foo/], 'foo', '=s', $coderef, { default => 'bar' } ],
             ],
+            opt => {},
         },
         argv => [],
         extra_test => sub {
@@ -316,7 +333,6 @@ test_new(
         },
         desc => 'with global_struct / spec, dest, default',
     );
-
 };
 
 test_new(

@@ -11,10 +11,12 @@ sub default_expects {
         name        => undef,
         version     => $::VERSION,
         modes       => undef,
-        opt         => {},
+        opt         => { help => undef },
         usage       => 1,
         args        => '',
-        struct      => [],
+        struct      => [
+            [ [qw/h help/], 'this help message' ],
+        ],
         summary     => {},
         requires    => {},
         ret         => 1,
@@ -34,14 +36,15 @@ sub test_new {
         %$expects,
     };
 
+    local $Test::Builder::Level = $Test::Builder::Level + 1;
     subtest $desc => sub {
         @::ARGV = @$argv;
         my $go = new_ok 'Getopt::Compact::WithCmd', [%$args];
 
-        for my $key (qw/
+        for my $key (qw{
             cmd name version modes opt usage args struct summary
             requires ret error other_usage _struct
-        /) {
+        }) {
             is_deeply +$go->{$key}, $expects->{$key}, $key;
         }
 
@@ -105,6 +108,16 @@ test_new(
     },
     expects => {
         modes => [qw/test foo/],
+        struct => [
+            [ [qw/h help/], 'this help message' ],
+            [ [qw/t test/], 'test mode' ],
+            [ [qw/f foo/], 'foo mode' ],
+        ],
+        opt => {
+            help => undef,
+            test => undef,
+            foo  => undef,
+        },
     },
     argv => [],
     expects_argv => [],
@@ -116,7 +129,9 @@ test_new(
         usage => 0,
     },
     expects => {
-        usage => 0,
+        usage  => 0,
+        opt    => {},
+        struct => [],
     },
     argv => [],
     expects_argv => [],
@@ -280,6 +295,7 @@ test_new(
             struct => [
                 [ [qw/f foo/], 'foo', '=s', \$foo ],
             ],
+            opt => {},
         },
         argv => [],
         expects_argv => [],
@@ -301,6 +317,7 @@ test_new(
             struct => [
                 [ [qw/f foo/], 'foo', '=s', \$foo, { default => 'bar' } ],
             ],
+            opt => {},
         },
         argv => [],
         expects_argv => [],
@@ -309,7 +326,6 @@ test_new(
         },
         desc => 'with global_struct / spec, dest, default',
     );
-
 };
 
 {
@@ -327,6 +343,7 @@ test_new(
             struct => [
                 [ [qw/f foo/], 'foo', '=s', $coderef, { default => 'bar' } ],
             ],
+            opt => {},
         },
         argv => [],
         expects_argv => [],
@@ -335,7 +352,6 @@ test_new(
         },
         desc => 'with global_struct / spec, dest, default',
     );
-
 };
 
 test_new(
