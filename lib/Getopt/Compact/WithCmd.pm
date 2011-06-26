@@ -406,7 +406,6 @@ sub _init_struct {
         my @modeopt;
         for my $m (@{$self->{modes}}) {
             my($mc) = $m =~ /^(\w)/;
-            $mc = 'n' if $m eq 'test';
             push @modeopt, [[$mc, $m], qq($m mode)];
         }
         unshift @$struct, @modeopt;

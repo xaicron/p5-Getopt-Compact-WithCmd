@@ -73,7 +73,7 @@ test_init_struct(
         [ [qw/v verbose/], 'verbose mode' ],
     ],
     expects => [
-        [ [qw/n test/], 'test mode' ],
+        [ [qw/t test/], 'test mode' ],
         [ [qw/f foo/], 'foo mode' ],
         [ [qw/b bar/], 'bar mode' ],
         [ [qw/v verbose/], 'verbose mode' ],
