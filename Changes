@@ -1,8 +1,12 @@
 Revision history for Perl extension Getopt::Compact::WithCmd
 
+0.17  Tue Jun 28 22:58:27 2011
+      [Changed]
+        - Changed global_struct default behavior
+
 0.16  Wed May 11 00:52:59 2011
       [Bug Fixed]
-      - Fixed required and $dest problem
+        - Fixed required and $dest problem
 
 0.15  Sun May  1 21:28:02 2011
       [Other]
