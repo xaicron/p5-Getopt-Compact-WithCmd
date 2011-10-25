@@ -1,5 +1,9 @@
 Revision history for Perl extension Getopt::Compact::WithCmd
 
+0.18  Tue Oct 25 18:55:42 2011
+      [Bug Fixed]
+        - Fixed a problme that \@argv hadn't been destroyed on new_from_array() (mandy++)
+
 0.17  Tue Jun 28 22:58:27 2011
       [Changed]
         - Changed global_struct default behavior
