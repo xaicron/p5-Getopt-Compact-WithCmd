@@ -16,4 +16,4 @@ xs/*obj
 *.old
 dll*
 *~
-MYMETA.yml
+MYMETA.*
