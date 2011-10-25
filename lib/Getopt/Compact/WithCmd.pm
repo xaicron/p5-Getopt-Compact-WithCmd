@@ -65,7 +65,7 @@ sub new_from_array {
         require Carp;
         Carp::croak("Usage: $class->new_from_array(\\\@args, %options)");
     }
-    local @ARGV = @$args;
+    local *ARGV = $args;
     return $class->new(%options);
 }
 

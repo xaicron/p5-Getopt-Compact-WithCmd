@@ -51,6 +51,10 @@ sub test_new {
             $extra_test->($go);
         }
 
+        if ($expects->{argv}) {
+            is_deeply $argv, $expects->{argv}, 'argv';
+        }
+
         done_testing;
     };
 }
@@ -195,6 +199,7 @@ test_new(
             help => 1,
             foo => undef,
         },
+        argv => [],
     },
     argv => [qw/--help/],
     desc => 'with global_struct / show usage',
@@ -218,6 +223,7 @@ test_new(
         requires => {
             foo => 'f|foo!',
         },
+        argv => [],
     },
     argv => [qw/--help/],
     desc => 'with global_struct / show usage (required)',
@@ -240,6 +246,7 @@ test_new(
         },
         error => 'Unknown option: hoge',
         ret => 0,
+        argv => [],
     },
     argv => [qw/--hoge/],
     desc => 'with global_struct / Unknown option',
@@ -378,6 +385,7 @@ test_new(
         opt => {
             foo => 'bar',
         },
+        argv => [],
     },
     argv => [qw/--foo=bar/],
     desc => 'with global_struct / --foo=bar',
@@ -401,6 +409,7 @@ test_new(
         opt => {
             foo => 'bar',
         },
+        argv => [qw/baz/],
     },
     argv => [qw/--foo bar baz/],
     desc => 'with global_struct / --foo bar (not registered command_struct',
@@ -466,6 +475,7 @@ test_new(
         opt => {
             foo => { bar => 'baz', hoge => 'fuga' },
         },
+        argv => [qw/piyo/],
     },
     argv => [qw/--foo bar=baz --foo=hoge=fuga piyo/],
     desc => 'with global_struct / --foo bar=baz --foo=hoge=fuga',
@@ -629,6 +639,7 @@ test_new(
         },
         ret => 0,
         error => 'Unknown command: bar',
+        argv => [],
     },
     argv => [qw/bar/],
     desc => 'with command_struct (implemented: foo) / Unknown command',
@@ -666,6 +677,7 @@ test_new(
         ],
         ret => 0,
         error => 'Unknown option: bar',
+        argv => [],
     },
     argv => [qw/foo --bar/],
     desc => 'with command_struct (implemented: foo) / Unknown option',
@@ -730,6 +742,7 @@ test_new(
         opt => {
             help => undef,
         },
+        argv => [],
     },
     argv => [qw/foo/],
     desc => 'with command_struct (implemented: foo) / dsec, args, other_usage (ARGV=foo)',
@@ -777,6 +790,7 @@ test_new(
             foo  => undef,
             help => undef,
         },
+        argv => [],
     },
     argv => [qw/foo/],
     desc => 'with command_struct (implemented: foo) / dsec, args, other_usage options (ARGV=foo)',
@@ -826,6 +840,7 @@ test_new(
         },
         ret => 0,
         error => 'Unknown option: bar',
+        argv => [],
     },
     argv => [qw/foo --bar/],
     desc => 'with command_struct (implemented: foo) / Unknown option: bar',
@@ -874,6 +889,7 @@ test_new(
             opt => {
                 help => undef,
             },
+            argv => [],
         },
         argv => [qw/foo --foo bar/],
         extra_test => sub {
@@ -926,6 +942,7 @@ test_new(
             opt => {
                 help => undef,
             },
+            argv => [],
         },
         argv => [qw/foo/],
         extra_test => sub {
@@ -982,6 +999,7 @@ test_new(
         },
         ret => 0,
         error => '`--foo` option must be specified',
+        argv => [],
     },
     argv => [qw/foo/],
     desc => 'with command_struct (implemented: foo) / must be specified',
@@ -1032,6 +1050,7 @@ test_new(
         requires => {
             foo => 'f|foo=s',
         },
+        argv => [],
     },
     argv => [qw/foo --foo bar/],
     desc => 'with command_struct (implemented: foo) / --foo=bar',
@@ -1081,6 +1100,7 @@ test_new(
         requires => {
             foo => 'f|foo=s',
         },
+        argv => [],
     },
     argv => [qw/foo --foo bar/],
     desc => 'with command_struct (implemented: foo) / usage 0',
@@ -1130,6 +1150,7 @@ test_new(
         requires => {
             foo => 'f|foo=s',
         },
+        argv => [qw/baz/],
     },
     argv => [qw/foo --foo bar baz/],
     desc => 'with command_struct (implemented: foo) / ex augv',
@@ -1204,6 +1225,7 @@ test_new(
         requires => {
             foo => 'f|foo=s',
         },
+        argv => [qw/baz/],
     },
     argv => [qw/foo --foo=foo bar baz --fuga/],
     desc => 'with command_struct (implemented: foo -> bar) / ex augv',
