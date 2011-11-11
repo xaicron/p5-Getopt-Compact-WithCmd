@@ -69,6 +69,18 @@ sub new_from_array {
     return $class->new(%options);
 }
 
+sub new_from_string {
+    my ($class, $str, %options) = @_;
+    unless (defined $str) {
+        require Carp;
+        Carp::croak("Usage: $class->new_from_string(\$str, %options)");
+    }
+    require Text::ParseWords;
+    my $args = [Text::ParseWords::shellwords($str)];
+    local *ARGV = $args;
+    return $class->new(%options);
+}
+
 sub command    { $_[0]->{command}  }
 sub commands   { $_[0]->{commands} }
 sub status     { $_[0]->{ret}      }
@@ -687,6 +699,14 @@ support nesting.
 C<< new_from_array >> can be used to parse options from an arbitrary array.
 
   $go = Getopt::Compact::WithCmd->new_from_array(\@myopts, ...);
+
+=head2 new_from_string($option_string, %args);
+
+C<< new_from_string >> can be used to parts options from an arbitrary string.
+
+This method using L<< Text::ParseWords >> on internal.
+
+  $go = Getopt::Compact::WithCmd->new_from_string('--foo bar baz', ...);
 
 =head2 opts
 
