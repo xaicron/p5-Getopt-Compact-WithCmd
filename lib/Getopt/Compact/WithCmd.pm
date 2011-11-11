@@ -684,9 +684,9 @@ support nesting.
 
 =head2 new_from_array(\@myopts, %args);
 
-C<new_from_array> can be used to parse options from an arbitrary array.
+C<< new_from_array >> can be used to parse options from an arbitrary array.
 
-  $go = Getopt::Compact::With->new_from_array(\@myopts, ...);
+  $go = Getopt::Compact::WithCmd->new_from_array(\@myopts, ...);
 
 =head2 opts
 
