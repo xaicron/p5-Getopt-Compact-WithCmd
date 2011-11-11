@@ -13,7 +13,6 @@ test_requires 'Test::Requires';
 tests_recursive 't';
 author_tests 'xt';
 
-auto_include();
 auto_set_repository();
 
 WriteAll;
