@@ -7,12 +7,13 @@ use File::Basename qw/basename/;
 use Getopt::Compact::WithCmd;
 
 subtest 'ok' => sub {
-    my $opts = Getopt::Compact::WithCmd->new_from_string('--foo',
+    my $go = Getopt::Compact::WithCmd->new_from_string('--foo bar',
         global_struct => {
             foo => { type => '!' },
         },
-    )->opts;
-    is $opts->{foo}, 1;
+    );
+    is $go->opts->{foo}, 1;
+    is_deeply $go->args, [qw/bar/];
 };
 
 subtest 'fail' => sub {

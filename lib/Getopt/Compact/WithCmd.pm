@@ -80,10 +80,12 @@ sub new_from_string {
     return $class->new(%options);
 }
 
-sub command    { $_[0]->{command}  }
-sub commands   { $_[0]->{commands} }
-sub status     { $_[0]->{ret}      }
-sub is_success { $_[0]->{ret}      }
+sub args       { $_[0]->{_argv}     }
+sub error      { $_[0]->{error}||'' }
+sub command    { $_[0]->{command}   }
+sub commands   { $_[0]->{commands}  }
+sub status     { $_[0]->{ret}       }
+sub is_success { $_[0]->{ret}       }
 sub pod2usage  { Carp::carp('Not implemented') }
 
 sub opts {
@@ -779,6 +781,18 @@ Display usage message and exit.
 
   $go->show_usage;
   $go->show_usage($target_command_name);
+
+=head2 error
+
+Return value is an error message or empty string.
+
+  $go->error;
+
+=head2 args
+
+Return value is array reference to any remaining arguments.
+
+  $go->args # like \@ARGV
 
 =head2 pod2usage
 
