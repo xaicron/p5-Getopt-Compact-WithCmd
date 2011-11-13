@@ -1,0 +1,4 @@
+--exec "perl -Ilib -MTest::Flatten -MTest::Name::FromLine"
+--merge
+--color
+--w
