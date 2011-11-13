@@ -5,7 +5,8 @@ use warnings;
 use 5.008_001;
 use Data::Dumper ();
 use List::Util qw(max);
-use Getopt::Long qw/GetOptionsFromArray/;
+use Getopt::Long qw(GetOptionsFromArray);
+use Carp ();
 use constant DEFAULT_CONFIG => (no_auto_abbrev => 1, bundling => 1);
 
 our $VERSION = '0.18';
@@ -62,7 +63,6 @@ sub new {
 sub new_from_array {
     my ($class, $args, %options) = @_;
     unless (ref $args eq 'ARRAY') {
-        require Carp;
         Carp::croak("Usage: $class->new_from_array(\\\@args, %options)");
     }
     local *ARGV = $args;
@@ -72,7 +72,6 @@ sub new_from_array {
 sub new_from_string {
     my ($class, $str, %options) = @_;
     unless (defined $str) {
-        require Carp;
         Carp::croak("Usage: $class->new_from_string(\$str, %options)");
     }
     require Text::ParseWords;
@@ -85,7 +84,7 @@ sub command    { $_[0]->{command}  }
 sub commands   { $_[0]->{commands} }
 sub status     { $_[0]->{ret}      }
 sub is_success { $_[0]->{ret}      }
-sub pod2usage  { require Carp; Carp::carp('Not implemented') }
+sub pod2usage  { Carp::carp('Not implemented') }
 
 sub opts {
     my($self) = @_;
@@ -161,7 +160,7 @@ sub usage {
             local $Data::Dumper::Indent = 0;
             local $Data::Dumper::Terse  = 1;
             my $info = [];
-            push @$info, $arg_spec                ? $self->_opt_spec2name($arg_spec): '';
+            push @$info, $arg_spec                ? $self->_opt_spec2name($arg_spec) : '';
             push @$info, $opts->{required}        ? "(required)" : '';
             push @$info, defined $opts->{default} ? "(default: ".Data::Dumper::Dumper($opts->{default}).")" : '';
             $info;
