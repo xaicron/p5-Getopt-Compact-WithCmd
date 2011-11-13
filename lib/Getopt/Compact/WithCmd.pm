@@ -11,6 +11,17 @@ use constant DEFAULT_CONFIG => (no_auto_abbrev => 1, bundling => 1);
 
 our $VERSION = '0.18';
 
+my $TYPE_MAP = {
+    'Bool'   => '!',
+    'Incr'   => '+',
+    'Str'    => '=s',
+    'Int'    => '=i',
+    'Num'    => '=f',
+    'ExNum'  => '=o',
+};
+
+my $TYPE_GEN = {};
+
 sub new {
     my ($class, %args) = @_;
     my $self = bless {
@@ -216,15 +227,15 @@ sub _opt_spec2name {
     my ($type, $dest) = $spec =~ /^[=:]?([!+isof])([@%])?/;
     if ($type) {
         $name =
-            $type eq '!' ? 'Bool'   :
-            $type eq '+' ? 'Incr'   :
-            $type eq 's' ? 'Str'    :
-            $type eq 'i' ? 'Int'    :
-            $type eq 'o' ? 'ExtInt' :
-            $type eq 'f' ? 'Number' : '';
+            $type eq '!' ? 'Bool'  :
+            $type eq '+' ? 'Incr'  :
+            $type eq 's' ? 'Str'   :
+            $type eq 'i' ? 'Int'   :
+            $type eq 'f' ? 'Num'   :
+            $type eq 'o' ? 'ExNum' : '';
     }
     if ($dest) {
-        $name .= $dest eq '@' ? ':Array' : $dest eq '%' ? ':Hash' : '';
+        $name = $dest eq '@' ? "Array[$name]" : $dest eq '%' ? "Hash[$name]" : $name;
     }
     return $name;
 }
@@ -366,9 +377,90 @@ sub _parse_struct {
         my($m, $descr, $spec, $ref, $opts) = @$s;
         my @onames = $self->_option_names($m);
         my($longname) = grep length($_) > 1, @onames;
-        my $o = join('|', @onames).($spec || '');
+        my ($type, $cb) = $self->_compile_spec($spec);
+        my $o = join('|', @onames).($type||'');
         my $dest = $longname ? $longname : $onames[0];
         $opts ||= {};
+        my $destination;
+        if (ref $cb eq 'CODE') {
+            my $t =
+                substr($type, -1, 1) eq '@' ? 'Array' :
+                substr($type, -1, 1) eq '%' ? 'Hash'  : '';
+            if (ref $ref eq 'CODE') {
+                $destination = sub { $ref->($_[0], $cb->($_[1])) };
+            }
+            elsif (ref $ref) {
+                if (ref $ref eq 'SCALAR' || ref $ref eq 'REF') {
+                    $$ref = $t eq 'Array' ? [] : $t eq 'Hash' ? {} : undef;
+                }
+                elsif (ref $ref eq 'ARRAY') {
+                    @$ref = ();
+                }
+                elsif (ref $ref eq 'HASH') {
+                    %$ref = ();
+                }
+                $destination = sub {
+                    if ($t eq 'Array') {
+                        if (ref $ref eq 'SCALAR' || ref $ref eq 'REF') {
+                            push @{$$ref}, scalar $cb->($_[1]);
+                        }
+                        elsif (ref $ref eq 'ARRAY') {
+                            push @$ref, scalar $cb->($_[1]);
+                        }
+                        elsif (ref $ref eq 'HASH') {
+                            my @kv = split '=', $_[1], 2;
+                            die qq(Option $_[0], key "$_[1]", requires a value\n)
+                                unless @kv == 2;
+                            $ref->{$kv[0]} = scalar $cb->($kv[1]);
+                        }
+                    }
+                    elsif ($t eq 'Hash') {
+                        if (ref $ref eq 'SCALAR' || ref $ref eq 'REF') {
+                            $$ref->{$_[1]} = scalar $cb->($_[2]);
+                        }
+                        elsif (ref $ref eq 'ARRAY') {
+                            # XXX but Getopt::Long is $ret = join '=', $_[1], $_[2];
+                            push @$ref, $_[1], scalar $cb->($_[2]);
+                        }
+                        elsif (ref $ref eq 'HASH') {
+                            $ref->{$_[1]} = scalar $cb->($_[2]);
+                        }
+                    }
+                    else {
+                        if (ref $ref eq 'SCALAR' || ref $ref eq 'REF') {
+                            $$ref = $cb->($_[1]);
+                        }
+                        elsif (ref $ref eq 'ARRAY') {
+                            @$ref = (scalar $cb->($_[1]));
+                        }
+                        elsif (ref $ref eq 'HASH') {
+                            my @kv = split '=', $_[1], 2;
+                            die qq(Option $_[0], key "$_[1]", requires a value\n)
+                                unless @kv == 2;
+                            %$ref = ($kv[0] => scalar $cb->($kv[1]));
+                        }
+                    }
+                };
+            }
+            else {
+                $destination = sub {
+                    if ($t eq 'Array') {
+                        $self->{opt}{$dest} ||= [];
+                        push @{$self->{opt}{$dest}}, scalar $cb->($_[1]);
+                    }
+                    elsif ($t eq 'Hash') {
+                        $self->{opt}{$dest} ||= {};
+                        $self->{opt}{$dest}{$_[1]} = $cb->($_[2]);
+                    }
+                    else {
+                        $self->{opt}{$dest} = $cb->($_[1]);
+                    }
+                };
+            }
+        }
+        else {
+            $destination = ref $ref ? $ref : \$self->{opt}{$dest};
+        }
         if (exists $opts->{default}) {
             my $value = $opts->{default};
             if (ref $value eq 'ARRAY') {
@@ -396,9 +488,9 @@ sub _parse_struct {
                 $self->{error} = "Invalid default option for $dest";
                 $self->{ret} = 0;
             }
-            $default_opthash->{$o} = ref $ref ? $ref : \$self->{opt}{$dest};
+            $default_opthash->{$o} = $destination;
         }
-        $opthash->{$o} = ref $ref ? $ref : \$self->{opt}{$dest};
+        $opthash->{$o} = $destination;
         $self->{requires}{$dest} = $o if $opts->{required};
     }
 
@@ -445,6 +537,37 @@ sub _normalize_struct {
     }
 
     return $result;
+}
+
+sub _compile_spec {
+    my ($self, $spec) = @_;
+    return if !defined $spec or $spec eq '';
+    return $spec if $self->_opt_spec2name($spec);
+    my ($type, $cb);
+    if ($spec =~ /^(Array|Hash)\[(\w+)\]$/) {
+        $type  = $TYPE_MAP->{$2} || Carp::croak("Can't find type constraint '$2'");
+        $type .= $1 eq 'Array' ? '@' : '%';
+        $cb    = $TYPE_GEN->{$2};
+    }
+    elsif ($type = $TYPE_MAP->{$spec}) {
+        $cb = $TYPE_GEN->{$spec};
+    }
+    else {
+        Carp::croak("Can't find type constraint '$spec'");
+    }
+    return $type, $cb;
+}
+
+sub add_type {
+    my ($class, $name, $src_type, $cb) = @_;
+    unless (defined $name && $src_type && ref $cb eq 'CODE') {
+        Carp::croak("Usage: $class->add_type(\$name, \$src_type, \$cb)");
+    }
+    unless ($TYPE_MAP->{$src_type}) {
+        Carp::croak("$src_type is not defined src type");
+    }
+    $TYPE_MAP->{$name} = $TYPE_MAP->{$src_type};
+    $TYPE_GEN->{$name} = $cb;
 }
 
 sub _init_summary {
