@@ -9,7 +9,7 @@ use Getopt::Long qw(GetOptionsFromArray);
 use Carp ();
 use constant DEFAULT_CONFIG => (no_auto_abbrev => 1, bundling => 1);
 
-our $VERSION = '0.18';
+our $VERSION = '0.19';
 
 my $TYPE_MAP = {
     'Bool'   => '!',
