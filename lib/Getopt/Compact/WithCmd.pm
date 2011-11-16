@@ -528,7 +528,11 @@ sub _normalize_struct {
         my $data = $struct->{$option} || {};
         $data = ref $data eq 'HASH' ? $data : {};
         my $row = [];
-        push @$row, [$option, ref $data->{alias} ? @{$data->{alias}} : ()];
+        push @$row, [
+            $option,
+            ref $data->{alias} eq 'ARRAY' ? @{$data->{alias}} :
+            defined $data->{alias}        ? $data->{alias}    :  (),
+        ];
         push @$row, $data->{desc};
         push @$row, $data->{type};
         push @$row, $data->{dest};

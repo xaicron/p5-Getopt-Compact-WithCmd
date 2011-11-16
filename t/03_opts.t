@@ -355,6 +355,24 @@ test_opts(
     args => {
         global_struct => {
             foo => {
+                alias => 'f',
+                type  => '!',
+            },
+        },
+    },
+    argv => [qw/-f/],
+    is_alive => 1,
+    expects => {
+        help => undef,
+        foo  => 1,
+    },
+    desc => 'alias of SCALAR',
+);
+
+test_opts(
+    args => {
+        global_struct => {
+            foo => {
                 alias => [qw/f/],
                 type  => '!',
             },
