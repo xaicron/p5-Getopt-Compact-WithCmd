@@ -756,6 +756,22 @@ And you can also write in hash style.
       },
   );
 
+I<$argument_spec_scalar> can be set value are L<< Getopt::Long >>'s option specifications.
+And you can also specify the following readable style:
+
+  Bool     # eq !
+  Incr     # eq +
+  Str      # eq =s
+  Int      # eq =i
+  Num      # eq =f
+  ExNum    # eq =o
+
+In addition, Array and Hash type are:
+
+  Array[Str] # eq =s@
+  Hash[Int]  # eq =i%
+  ...
+
 I<$opt_hasref> are:
 
   {
@@ -822,6 +838,31 @@ support nesting.
   $ ./foo.pl $command $sub_command ...
 
 =back
+
+=head2 add_type($new_type, $src_type, $code_ref);
+
+This method is additional your own type.
+You must be call before new() method.
+
+  use JSON;
+  use Data::Dumper;
+
+  Getopt::Compact::WithCmd->add_type(JSON => Str => sub { decode_json(shift) });
+  my $go = Getopt::Compact::WithCmd->new(
+      global_struct => {
+          from_json => {
+              type => 'JSON',
+          },
+      },
+  );
+  my $data = $go->opts->{from_json};
+  print Dumper $data;
+
+  # will run cmd:
+  $ ./add_type.pl --from_json '{"foo":"bar"}'
+  $VAR1 = {
+            'foo' => 'bar'
+          };
 
 =head2 new_from_array(\@myopts, %args);
 
