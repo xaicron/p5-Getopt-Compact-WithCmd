@@ -257,4 +257,10 @@ subtest 'hash dest on %foo (defined)' => sub {
     is_deeply $go->args, [];
 };
 
+subtest 'usage' => sub {
+    like create_obj('', { type => 'Eval' })->usage, qr/Eval/;
+    like create_obj('', { type => 'Array[Eval]' })->usage, qr/Array\[Eval\]/;
+    like create_obj('', { type => 'Hash[Eval]' })->usage, qr/Hash\[Eval\]/;
+};
+
 done_testing;

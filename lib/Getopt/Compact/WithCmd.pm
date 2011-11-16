@@ -173,7 +173,7 @@ sub usage {
             local $Data::Dumper::Indent = 0;
             local $Data::Dumper::Terse  = 1;
             my $info = [];
-            push @$info, $arg_spec                ? $self->_opt_spec2name($arg_spec) : '';
+            push @$info, $self->_opt_spec2name($arg_spec) || $arg_spec || '';
             push @$info, $opts->{required}        ? "(required)" : '';
             push @$info, defined $opts->{default} ? "(default: ".Data::Dumper::Dumper($opts->{default}).")" : '';
             $info;
@@ -224,6 +224,7 @@ sub show_usage {
 sub _opt_spec2name {
     my ($self, $spec) = @_;
     my $name = '';
+    return $name unless defined $spec;
     my ($type, $dest) = $spec =~ /^[=:]?([!+isof])([@%])?/;
     if ($type) {
         $name =
