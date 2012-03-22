@@ -358,6 +358,30 @@ test_new(
     args => {
         usage => 0,
         global_struct => [
+            [ [qw/f foo/], 'foo', '=i' ],
+        ],
+    },
+    expects => {
+        usage => 0,
+        struct => [
+            [ [qw/f foo/], 'foo', '=i' ],
+        ],
+        requires => {},
+        opt => {
+            foo => 100,
+        },
+        error => undef,
+        ret => 1,
+    },
+    argv => [qw/-f=100/],
+    expects_argv => [],
+    desc => 'with global_struct / allow argv -f=100',
+);
+
+test_new(
+    args => {
+        usage => 0,
+        global_struct => [
             [ [qw/f foo/], 'foo', '=s', undef, { required => 1 } ],
         ],
     },

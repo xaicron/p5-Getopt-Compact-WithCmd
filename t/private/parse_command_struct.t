@@ -11,7 +11,10 @@ sub test_parse_command_struct {
 
     subtest $desc => sub {
         local @ARGV = @$args if $args;
-        my $go = bless $opts ? $opts : {}, 'Getopt::Compact::WithCmd';
+        my $go = bless {
+            $opts ? %$opts : (),
+            _struct => $struct,
+        }, 'Getopt::Compact::WithCmd';
 
         my $got = $go->_parse_command_struct($struct);
 

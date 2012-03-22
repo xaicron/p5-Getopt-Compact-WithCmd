@@ -7,7 +7,7 @@ use Data::Dumper ();
 use List::Util qw(max);
 use Getopt::Long qw(GetOptionsFromArray);
 use Carp ();
-use constant DEFAULT_CONFIG => (no_auto_abbrev => 1, bundling => 1);
+use constant DEFAULT_CONFIG => (no_auto_abbrev => 1);
 
 our $VERSION = '0.19';
 
@@ -54,6 +54,7 @@ sub new {
     if ($args{command_struct}) {
         if (my @gopts = $self->_parse_argv) {
             $self->{ret} = $self->_parse_option(\@gopts, $opthash);
+            unshift @ARGV, @gopts;
             return $self unless $self->{ret};
             return $self if $self->_want_help;
         }
@@ -272,7 +273,7 @@ sub _parse_command_struct {
 
     my $command_map = { map { $_ => 1 } keys %$command_struct };
     my $command = shift @ARGV;
-    unless ($command) {
+    unless (defined $command) {
         $self->{ret} = $self->_check_requires;
         return $self;
     }
@@ -311,8 +312,9 @@ sub _parse_command_struct {
     if (my $nested_struct = $command_struct->{$command}{command_struct}) {
         $self->_init_nested_struct($nested_struct);
 
-        my @opts = $self->_parse_argv;
+        my @opts = $self->_parse_argv($nested_struct);
         $self->{ret} = $self->_parse_option(\@opts, $opthash);
+        unshift @ARGV, @opts;
         $self->_check_requires;
         if ($self->_want_help) {
             delete $self->{error};
@@ -359,9 +361,12 @@ sub _parse_option {
 }
 
 sub _parse_argv {
+    my ($self, $struct) = @_;
+    $struct ||= $self->{_struct};
+
     my @opts;
     while (@ARGV) {
-        last unless $ARGV[0] =~ /^-/;
+        last if exists $struct->{$ARGV[0]};
         push @opts, shift @ARGV;
     }
     return @opts;
@@ -498,6 +503,7 @@ sub _parse_struct {
     return if $self->{error};
     if (@$default_args) {
         $self->{ret} = $self->_parse_option($default_args, $default_opthash);
+        unshift @ARGV, @$default_args;
         return unless $self->{ret};
     }
 

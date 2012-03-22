@@ -3,14 +3,18 @@ use warnings;
 use Test::More;
 use Getopt::Compact::WithCmd;
 
+my $go = Getopt::Compact::WithCmd->new;
+
 sub test_parse_argv {
     my %specs = @_;
 
-    my ($input, $expects, $desc) = @specs{qw/input expects desc/};
+    my ($input, $expects, $sub_command, $desc) =
+        @specs{qw/input expects sub_command desc/};
 
     subtest $desc => sub {
         local @ARGV = @$input;
-        my @opts = Getopt::Compact::WithCmd->_parse_argv;
+        $go->{_struct} = $sub_command || {};
+        my @opts = $go->_parse_argv;
 
         is_deeply \@opts, $expects, 'parse argv';
 
@@ -31,21 +35,24 @@ test_parse_argv(
 );
 
 test_parse_argv(
-    input   => [qw/--foo bar/],
-    expects => [qw/--foo/],
-    desc    => 'with cmd',
+    input       => [qw/--foo bar/],
+    expects     => [qw/--foo/],
+    sub_command => { bar => 1 },
+    desc        => 'with cmd',
 );
 
 test_parse_argv(
-    input   => [qw/--foo=bar/],
-    expects => [qw/--foo=bar/],
-    desc    => 'string argv',
+    input       => [qw/--foo=bar/],
+    expects     => [qw/--foo=bar/],
+    sub_command => { bar => 1 },
+    desc        => 'string argv',
 );
 
 test_parse_argv(
-    input   => [qw/--foo=bar baz/],
-    expects => [qw/--foo=bar/],
-    desc    => 'string argv with cmd',
+    input       => [qw/--foo=bar baz/],
+    expects     => [qw/--foo=bar/],
+    sub_command => { baz => 1 },
+    desc        => 'string argv with cmd',
 );
 
 done_testing;
