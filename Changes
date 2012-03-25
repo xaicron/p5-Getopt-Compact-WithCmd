@@ -1,5 +1,9 @@
 Revision history for Perl extension Getopt::Compact::WithCmd
 
+0.20  Mon Mar 26 00:04:33 2012
+      [Bug Fixed]
+        - If the option takes an argument same as sub-command was not works.
+
 0.19  Thu Nov 17 01:29:56 2011
       [New Features]
         - Added new_from_string() method

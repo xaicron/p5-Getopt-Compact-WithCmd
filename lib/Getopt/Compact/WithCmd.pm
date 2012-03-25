@@ -13,7 +13,7 @@ use constant DEFAULT_CONFIG => (
     bundling       => 1,
 );
 
-our $VERSION = '0.19';
+our $VERSION = '0.20';
 
 my $TYPE_MAP = {
     'Bool'   => '!',
