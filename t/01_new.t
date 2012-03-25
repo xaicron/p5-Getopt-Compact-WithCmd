@@ -359,23 +359,26 @@ test_new(
         usage => 0,
         global_struct => [
             [ [qw/f foo/], 'foo', '=i' ],
+            [ [qw/b bar/], 'bar' ],
         ],
     },
     expects => {
         usage => 0,
         struct => [
             [ [qw/f foo/], 'foo', '=i' ],
+            [ [qw/b bar/], 'bar' ],
         ],
         requires => {},
         opt => {
             foo => 100,
+            bar => 1,
         },
         error => undef,
         ret => 1,
     },
-    argv => [qw/-f=100/],
+    argv => [qw/-bf100/],
     expects_argv => [],
-    desc => 'with global_struct / allow argv -f=100',
+    desc => 'with global_struct / allow argv -bf100 (enabled bundling)',
 );
 
 test_new(

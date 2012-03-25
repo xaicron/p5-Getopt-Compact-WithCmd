@@ -7,7 +7,11 @@ use Data::Dumper ();
 use List::Util qw(max);
 use Getopt::Long qw(GetOptionsFromArray);
 use Carp ();
-use constant DEFAULT_CONFIG => (no_auto_abbrev => 1, no_ignore_case => 1);
+use constant DEFAULT_CONFIG => (
+    no_auto_abbrev => 1,
+    no_ignore_case => 1,
+    bundling       => 1,
+);
 
 our $VERSION = '0.19';
 
