@@ -35,8 +35,8 @@ test_parse_argv(
 );
 
 test_parse_argv(
-    input       => [qw/--foo bar/],
-    expects     => [qw/--foo/],
+    input       => [qw/--foo bar baz/],
+    expects     => [qw/--foo bar/],
     sub_command => { bar => 1 },
     desc        => 'with cmd',
 );
@@ -49,8 +49,8 @@ test_parse_argv(
 );
 
 test_parse_argv(
-    input       => [qw/--foo=bar baz/],
-    expects     => [qw/--foo=bar/],
+    input       => [qw/--foo=bar baz hoge/],
+    expects     => [qw/--foo=bar baz/],
     sub_command => { baz => 1 },
     desc        => 'string argv with cmd',
 );

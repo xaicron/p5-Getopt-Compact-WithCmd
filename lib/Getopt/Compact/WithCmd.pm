@@ -366,8 +366,9 @@ sub _parse_argv {
 
     my @opts;
     while (@ARGV) {
-        last if exists $struct->{$ARGV[0]};
-        push @opts, shift @ARGV;
+        my $argv = shift @ARGV;
+        push @opts, $argv;
+        last if exists $struct->{$argv};
     }
     return @opts;
 }
