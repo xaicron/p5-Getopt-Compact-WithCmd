@@ -488,7 +488,7 @@ sub _parse_struct {
                 } keys %$value;
             }
             elsif (not ref $value) {
-                if (!$spec || $spec eq '!') {
+                if (!$spec || ($TYPE_MAP->{$spec} || $spec) eq '!') {
                     push @$default_args, "--$dest" if $value;
                 }
                 else {

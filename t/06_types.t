@@ -16,6 +16,17 @@ subtest 'Bool' => sub {
     is_deeply $go->args, ['bar'];
 };
 
+subtest 'Bool (default)' => sub {
+    my $go = create_obj('bar', {
+        type => 'Bool',
+        opts => {
+            default => 1,
+        },
+    });
+    is $go->opts->{foo}, 1;
+    is_deeply $go->args, ['bar'];
+};
+
 subtest 'Incr' => sub {
     my $go = create_obj('--foo bar --foo baz', { type => 'Incr' });
     is $go->opts->{foo}, 2;
