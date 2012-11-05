@@ -1,5 +1,9 @@
 Revision history for Perl extension Getopt::Compact::WithCmd
 
+0.21  Tue Nov  6 03:00:38 2012
+      [Bug Fixed]
+        - Fixed an issue that when specify a default value with Bool type, the arguments is shifted.
+
 0.20  Mon Mar 26 00:04:33 2012
       [Bug Fixed]
         - If the option takes an argument same as sub-command was not works.
