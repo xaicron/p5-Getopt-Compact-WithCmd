@@ -226,6 +226,248 @@ sub show_usage {
     exit !$self->status;
 }
 
+sub completion {
+    my($self, $shell) = @_;
+    $shell ||= 'bash';
+
+    if ($shell eq 'bash') {
+        return $self->_completion_bash;
+    } else {
+        Carp::carp("Not implemented: completion for $shell");
+        return "";
+    }
+}
+
+sub show_completion {
+    my $self = shift;
+    print $self->completion(@_);
+    exit !$self->status;
+}
+
+sub _completion_bash {
+    my $self = shift;
+    my $comp = '';
+
+    my $prog  = $self->{name} || substr($0, rindex($0, '/')+1);
+    my $fname = $prog;
+    $fname =~ s/[.-]/_/g;
+
+    my @global_opts;
+    my @commands;
+    my $case = {
+        word  => '"$cmd"',
+        cases => [],
+    };
+
+    @global_opts = $self->_options2optarg($self->{struct});
+
+    for my $cmd (sort keys %{ $self->{_struct} }) {
+        my $s = $self->{_struct}{$cmd};
+
+        my @opts = $self->_options2optarg($s->{options});
+        my @commands2;
+
+        if (ref $s->{command_struct} eq 'HASH') {
+            for my $cmd (sort keys %{ $s->{command_struct} }) {
+                my $s = $s->{command_struct}{$cmd};
+                my @opts = $self->_options2optarg($s->{options});
+
+                push @commands2, {
+                    cmd  => $cmd,
+                    opts => \@opts,
+                };
+            }
+        }
+
+        push @commands, {
+            cmd    => $cmd,
+            opts   => \@opts,
+            subcmd => \@commands2,
+            args   => ($s->{args} || ''),
+        };
+    }
+
+    $comp .= "_$fname() {\n";
+    $comp .= <<'EOC';
+  COMPREPLY=()
+  local cur=${COMP_WORDS[COMP_CWORD]}
+  local prev=${COMP_WORDS[COMP_CWORD-1]}
+  local cmd=()
+  for ((i=1; i<COMP_CWORD; i++)); do
+    # skip global opts and type to find cmd
+    if [[ "${COMP_WORDS[$i]}" != -* && "${COMP_WORDS[$i]}" != [A-Z]* ]]; then
+      cmd[${#cmd[@]}]=${COMP_WORDS[$i]}
+    fi
+  done
+
+EOC
+
+    $comp .= sprintf qq{  local global_opts="%s"\n},
+        join(" ", map { @{$_->{opt}} } @global_opts);
+    $comp .= sprintf qq{  local cmds="%s"\n},
+        join(" ", map { $_->{cmd} } @commands);
+    $comp .= "\n";
+
+    ### sub commands
+    for my $command (@commands) {
+
+        my $case_prev = {
+            word  => '"$prev"',
+            cases => [
+                _opts2casecmd(@{ $command->{opts} }),
+                {
+                    pat => '*',
+                    cmd => ['COMPREPLY=($(compgen -W "'._gen_wordlist($command).'" -- "$cur"))'],
+                },
+            ],
+        };
+
+        if (scalar(@{ $command->{subcmd} }) > 0) {
+            my @cases;
+
+            for my $subcommand (@{ $command->{subcmd} }) {
+                next if (scalar(@{ $subcommand->{opts} }) <= 0);
+                push @cases, {
+                    pat => $subcommand->{cmd},
+                    cmd => [{
+                        word  => '"$prev"',
+                        cases => [
+                            _opts2casecmd(@{ $subcommand->{opts} }),
+                            {
+                                pat => '*',
+                                cmd => ['COMPREPLY=($(compgen -W "'._gen_wordlist($subcommand).'" -- "$cur"))'],
+                            },
+                        ],
+                    }],
+                };
+            }
+
+            push @cases, {
+                pat => '*',
+                cmd => [ $case_prev ],
+            };
+
+            push @{ $case->{cases} }, {
+                pat => $command->{cmd},
+                cmd => [{
+                    word  => '"${cmd[1]}"',
+                    cases => [@cases],
+                }],
+            };
+        } else {
+            push @{ $case->{cases} }, {
+                pat => $command->{cmd},
+                cmd => [ $case_prev ],
+            };
+        }
+    }
+
+    ### global opts
+    push @{ $case->{cases} }, {
+        pat => '*',
+        cmd => [{
+            word  => '"$prev"',
+            cases => [
+                _opts2casecmd(@global_opts),
+                {
+                    pat => '*',
+                    cmd => ['COMPREPLY=($(compgen -W "$global_opts $cmds" -- "$cur"))'],
+                },
+            ],
+        }],
+    };
+
+    my @c = _generate_case_command($case);
+    $comp .= join("\n", map {"  ".$_} @c)."\n";
+
+    $comp .= <<"EOC";
+}
+
+complete -F _$fname $prog
+EOC
+    return $comp;
+}
+
+# take following hashref and generate case command string
+# +{
+#     word  => WORD, # case WORD in
+#     cases => [
+#         {
+#             pat => PATTERN,               # PATTERN)
+#             cmd => ['cmd1', 'cmd2', ...], # COMMANDS;;
+#         },
+#         {
+#             pat => PATTERN,               # PATTERN)
+#             cmd => [                      # nested case command
+#                 {
+#                     word  => WORD,
+#                     cases => [ ... ],
+#                 },
+#             ],
+#         },
+#     ],
+# }
+sub _generate_case_command {
+    my $case = shift;
+    my @line;
+
+    push @line, "case $case->{word} in";
+    for my $c (@{ $case->{cases} }) {
+        push @line, "  $c->{pat})";
+        for my $cmd (@{ $c->{cmd} }, ';;') {
+            if (ref $cmd eq 'HASH') {
+                push @line, map {"    ".$_} _generate_case_command->($cmd);
+            } else {
+                push @line, "    ".$cmd;
+            }
+        }
+    }
+    push @line, "esac";
+
+    return @line;
+}
+
+sub _options2optarg {
+    my($self, $opts) = @_;
+    my @optarg;
+
+    for my $o (@{ $opts }) {
+        my ($name_spec, $desc, $arg_spec, $dist, $opts) = @$o;
+        my @onames = map { (length($_) > 1 ? '--' : '-').$_ } $self->_option_names($name_spec);
+        my $arg = $self->_opt_spec2name($arg_spec) || $arg_spec || '';
+        $arg = '' if $arg eq 'Incr';
+        push @optarg, {
+            opt => \@onames,
+            arg => $arg,
+        };
+    }
+
+    return @optarg;
+}
+
+sub _opts2casecmd {
+    my @cases;
+    for my $o (grep { $_->{arg} } @_) {
+        push @cases, {
+            pat => join("|", @{ $o->{opt} }),
+            cmd => ['COMPREPLY=($(compgen -W "'.$o->{arg}.'" -- "$cur"))'],
+        };
+    }
+
+    return @cases;
+}
+
+sub _gen_wordlist {
+    my $command = shift;
+
+    return join(" ",
+                '-h', '--help',
+                (map { @{$_->{opt}} } @{ $command->{opts} }),
+                ($command->{args}||''),
+                (map { $_->{cmd} } @{ $command->{subcmd} }),
+            );
+}
+
 sub _opt_spec2name {
     my ($self, $spec) = @_;
     my $name = '';
@@ -961,6 +1203,22 @@ Display usage message and exit.
 
   $go->show_usage;
   $go->show_usage($target_command_name);
+
+=head2 completion
+
+Gets shell completion string.
+
+  my $comp = $go->completion('bash');
+
+NOTICE:
+completion() supports only one nested level of "command_struct".
+completion() supports only bash.
+
+=head2 show_completion
+
+Display completion string and exit.
+
+  $go->show_completion('bash');
 
 =head2 error
 
