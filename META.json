@@ -72,9 +72,9 @@
          "web" : "https://github.com/xaicron/p5-Getopt-Compact-WithCmd"
       }
    },
-   "version" : "0.21",
+   "version" : "0.22",
    "x_contributors" : [
       "HIROSE Masaaki <hirose31@gmail.com>",
-      "Yuji Shimada <xaicron@gmail.com>"
+      "xaicron <xaicron@gmail.com>"
    ]
 }

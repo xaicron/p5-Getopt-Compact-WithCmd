@@ -2,6 +2,10 @@ Revision history for Perl extension Getopt::Compact::WithCmd
 
 {{$NEXT}}
 
+0.22 2014-01-16T14:09:28Z
+      [New Features]
+        - Added show_completion() and completion() method (hirose31++)
+
 0.21  Tue Nov  6 03:00:38 2012
       [Bug Fixed]
         - Fixed an issue that when specify a default value with Bool type, the arguments is shifted.
