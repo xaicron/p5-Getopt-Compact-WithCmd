@@ -17,3 +17,11 @@ xs/*obj
 dll*
 *~
 MYMETA.*
+/Getopt-Compact-WithCmd-*
+/.build
+/_build_params
+/Build
+/Build.bat
+!Build/
+!META.json
+!LICENSE
